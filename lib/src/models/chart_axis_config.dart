@@ -18,6 +18,7 @@ class ChartAxisConfig {
     this.initialTopBoundQuote = defaultTopBoundQuote,
     this.initialBottomBoundQuote = defaultBottomBoundQuote,
     this.maxCurrentTickOffset = defaultMaxCurrentTickOffset,
+    this.initialCurrentTickOffset,
     this.defaultIntervalWidth = 20,
     this.showQuoteGrid = true,
     this.showEpochGrid = true,
@@ -34,6 +35,10 @@ class ChartAxisConfig {
   /// Max distance between [rightBoundEpoch] and [_nowEpoch] in pixels.
   /// Limits panning to the right.
   final double maxCurrentTickOffset;
+
+  /// Initial distance between [rightBoundEpoch] and the last tick in pixels.
+  /// If null, defaults to [maxCurrentTickOffset].
+  final double? initialCurrentTickOffset;
 
   /// Show Quote Grid lines and labels.
   final bool showQuoteGrid;
@@ -65,11 +70,14 @@ class ChartAxisConfig {
     double? initialTopBoundQuote,
     double? initialBottomBoundQuote,
     double? maxCurrentTickOffset,
+    double? initialCurrentTickOffset,
   }) =>
       ChartAxisConfig(
         initialTopBoundQuote: initialTopBoundQuote ?? this.initialTopBoundQuote,
         initialBottomBoundQuote:
             initialBottomBoundQuote ?? this.initialBottomBoundQuote,
         maxCurrentTickOffset: maxCurrentTickOffset ?? this.maxCurrentTickOffset,
+        initialCurrentTickOffset:
+            initialCurrentTickOffset ?? this.initialCurrentTickOffset,
       );
 }
