@@ -1054,6 +1054,11 @@ class _ChartSection extends StatelessWidget {
         ClipRect(
           child: DerivChart(
             useDrawingToolsV2: true,
+            chartAxisConfig: const ChartAxisConfig(
+              defaultIntervalWidth: 8, // 默认宽度
+              maxCurrentTickOffset: 320, // 最大可滚动偏移
+              initialCurrentTickOffset: 80, // 初始偏移，较小值让图表初始时更靠近最后一个tick
+            ),
             interactiveLayerBehaviour: interactiveLayerBehaviour,
             mainSeries: mainSeries,
             markerSeries: markerSeries,

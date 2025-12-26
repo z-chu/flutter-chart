@@ -57,6 +57,7 @@ class XAxisModel extends ChangeNotifier {
     required bool isLive,
     required bool snapMarkersToIntervals,
     required double maxCurrentTickOffset,
+    double? initialCurrentTickOffset,
     this.defaultIntervalWidth = 20,
     bool startWithDataFitMode = false,
     int? minEpoch,
@@ -85,7 +86,9 @@ class XAxisModel extends ChangeNotifier {
     _msPerPx = msPerPx ?? _defaultMsPerPx;
     _isLive = isLive;
     _maxCurrentTickOffset = maxCurrentTickOffset;
-    _rightBoundEpoch = _maxRightBoundEpoch;
+    // Use initialCurrentTickOffset for initial position, fallback to max
+    _rightBoundEpoch = _shiftEpoch(
+        _maxEpoch, initialCurrentTickOffset ?? maxCurrentTickOffset);
     _dataFitMode = startWithDataFitMode;
     _minIntervalWidth = minIntervalWidth ?? 1;
     _maxIntervalWidth = maxIntervalWidth ?? 80;

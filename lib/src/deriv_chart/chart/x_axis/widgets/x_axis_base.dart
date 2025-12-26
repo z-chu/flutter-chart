@@ -109,6 +109,8 @@ class XAxisState extends State<XAxisBase> with TickerProviderStateMixin {
       minEpoch: widget.minEpoch,
       maxEpoch: widget.maxEpoch,
       maxCurrentTickOffset: chartConfig.chartAxisConfig.maxCurrentTickOffset,
+      initialCurrentTickOffset:
+          chartConfig.chartAxisConfig.initialCurrentTickOffset,
       defaultIntervalWidth: chartConfig.chartAxisConfig.defaultIntervalWidth,
       msPerPx: widget.msPerPx,
       minIntervalWidth: widget.minIntervalWidth,
