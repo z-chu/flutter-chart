@@ -1,7 +1,10 @@
 import 'package:deriv_chart/deriv_chart.dart';
 
 /// ScrollToLastTick callback.
-typedef OnScrollToLastTick = Function({required bool animate});
+typedef OnScrollToLastTick = Function({
+  required bool animate,
+  bool resetOffset,
+});
 
 /// Callback to complete the current tick animation immediately.
 typedef OnCompleteTickAnimation = void Function();
@@ -82,8 +85,11 @@ class ChartController {
   GetMsPerPx? getMsPerPx;
 
   /// Scroll chart visible area to the newest data.
-  void scrollToLastTick({bool animate = false}) =>
-      onScrollToLastTick?.call(animate: animate);
+  ///
+  /// If [resetOffset] is true, scrolls to [initialCurrentTickOffset].
+  /// Otherwise, preserves the current offset from the last tick.
+  void scrollToLastTick({bool animate = false, bool resetOffset = false}) =>
+      onScrollToLastTick?.call(animate: animate, resetOffset: resetOffset);
 
   /// Scales the chart.
   double? scale(double scale) => onScale?.call(scale);

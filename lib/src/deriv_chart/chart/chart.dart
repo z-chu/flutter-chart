@@ -407,7 +407,10 @@ abstract class _ChartState extends State<Chart> with WidgetsBindingObserver {
         // prevLastEntry values that may have accumulated while the web browser
         // tab was hidden. This prevents the stretched line glitch.
         _controller.onCompleteTickAnimation?.call();
-        _controller.onScrollToLastTick?.call(animate: false);
+        // Use resetOffset: false to maintain the current scroll offset
+        // instead of jumping to initialCurrentTickOffset
+        _controller.onScrollToLastTick
+            ?.call(animate: false, resetOffset: false);
       });
     }
   }

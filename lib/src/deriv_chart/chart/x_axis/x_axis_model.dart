@@ -70,6 +70,7 @@ class XAxisModel extends ChangeNotifier {
     this.onScroll,
   }) {
     _maxCurrentTickOffset = maxCurrentTickOffset;
+    _initialCurrentTickOffset = initialCurrentTickOffset;
     _snapMarkersToIntervals = snapMarkersToIntervals;
 
     _nowEpoch = entries.isNotEmpty
@@ -123,6 +124,10 @@ class XAxisModel extends ChangeNotifier {
   /// Max distance between [rightBoundEpoch] and [_nowEpoch] in pixels.
   /// Limits panning to the right.
   double _maxCurrentTickOffset = 200;
+
+  /// Initial distance between [rightBoundEpoch] and the last tick in pixels.
+  /// Used as the default offset when scrolling to last tick.
+  double? _initialCurrentTickOffset;
 
   late bool _isLive;
 
@@ -280,7 +285,8 @@ class XAxisModel extends ChangeNotifier {
     if (entries == null) {
       return;
     }
-    final bool firstLoad = _entries == null;
+    // firstLoad is true when _entries is null OR empty (initial state)
+    final bool firstLoad = _entries == null || _entries!.isEmpty;
 
     final bool tickLoad = !firstLoad &&
         entries.length >= 2 &&
@@ -321,6 +327,21 @@ class XAxisModel extends ChangeNotifier {
     // modified in place.
     _entries = entries.sublist(0);
 
+    // Update epoch bounds based on new entries before clamping
+    if (entries.isNotEmpty) {
+      _minEpoch = entries.first.epoch;
+      _maxEpoch = entries.last.epoch;
+    }
+
+    // On first load, set rightBoundEpoch to the correct initial position.
+    // This is needed because the initial _rightBoundEpoch was calculated based
+    // on _nowEpoch (before data was loaded), not the actual data's epoch range.
+    if (firstLoad && entries.isNotEmpty) {
+      final double offsetToUse =
+          _initialCurrentTickOffset ?? _maxCurrentTickOffset;
+      _rightBoundEpoch = _shiftEpoch(_maxEpoch, offsetToUse);
+    }
+
     // After switching between closed and open symbols, since their epoch range
     // might be without any overlap, scroll position on the new symbol might be
     // completely off where there is no data hence the chart will show just a
@@ -337,7 +358,10 @@ class XAxisModel extends ChangeNotifier {
     }
     _granularity = newGranularity;
     _msPerPx = _defaultMsPerPx;
-    _scrollTo(_maxRightBoundEpoch);
+    // Use initialCurrentTickOffset if set, otherwise fall back to max
+    final double offsetToUse =
+        _initialCurrentTickOffset ?? _maxCurrentTickOffset;
+    _scrollTo(_shiftEpoch(_maxEpoch, offsetToUse));
   }
 
   /// Updates chart's isLive property.
@@ -534,13 +558,31 @@ class XAxisModel extends ChangeNotifier {
   }
 
   /// Animate scrolling to current tick.
-  void scrollToLastTick({bool animate = true}) {
+  ///
+  /// If [resetOffset] is true, scrolls to [_initialCurrentTickOffset]
+  /// (or [_maxCurrentTickOffset] if initial offset is not set).
+  /// Otherwise, preserves the current offset from the last tick.
+  void scrollToLastTick({bool animate = true, bool resetOffset = false}) {
     final Duration duration =
         animate ? const Duration(milliseconds: 600) : Duration.zero;
+
+    // Calculate the offset to use
+    final double offsetToUse;
+    if (!resetOffset && _entries != null && _entries!.isNotEmpty) {
+      // Preserve current offset from the last tick
+      final int lastTickEpoch = _entries!.last.epoch;
+      final double currentOffset = pxBetween(lastTickEpoch, _rightBoundEpoch);
+      // Clamp to maxCurrentTickOffset to ensure we don't exceed the limit
+      offsetToUse = currentOffset.clamp(0, _maxCurrentTickOffset);
+    } else {
+      // Use initialCurrentTickOffset if set, otherwise fall back to max
+      offsetToUse = _initialCurrentTickOffset ?? _maxCurrentTickOffset;
+    }
+
     final int target = _shiftEpoch(
             // _lastEntryEpoch will be removed later.
             (_entries?.isNotEmpty ?? false) ? _entries!.last.epoch : _nowEpoch,
-            _maxCurrentTickOffset) +
+            offsetToUse) +
         duration.inMilliseconds;
 
     final double distance = target > _rightBoundEpoch
