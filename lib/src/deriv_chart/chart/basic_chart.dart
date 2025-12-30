@@ -378,6 +378,9 @@ class BasicChartState<T extends BasicChart> extends State<T>
               _buildChartData(),
               if (context.read<ChartConfig>().chartAxisConfig.showQuoteGrid)
                 _buildQuoteGridLabel(gridLineQuotes),
+              // Y-axis scale gesture layer - handles vertical scaling on quote labels area
+              // This layer intercepts gestures to prevent CustomScrollView from capturing them
+              _buildYAxisScaleGestureLayer(),
             ],
           );
         },
@@ -489,6 +492,28 @@ class BasicChartState<T extends BasicChart> extends State<T>
         _onQuoteLabelsTouchArea(details.globalPosition)) {
       _scaleVertically(details.delta.dy);
     }
+  }
+
+  /// Builds a gesture layer for Y-axis scaling that intercepts vertical drag
+  /// gestures on the quote labels area.
+  ///
+  /// This layer is positioned on the right side of the chart (quote labels area)
+  /// and uses [HitTestBehavior.opaque] to prevent gesture events from being
+  /// passed to parent scrollable widgets like [CustomScrollView].
+  Widget _buildYAxisScaleGestureLayer() {
+    return Positioned(
+      right: 0,
+      top: 0,
+      bottom: 0,
+      width: quoteLabelsTouchAreaWidth,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onVerticalDragUpdate: (DragUpdateDetails details) {
+          _scaleVertically(details.delta.dy);
+        },
+        child: const SizedBox.expand(),
+      ),
+    );
   }
 
   void _updateChartPosition() =>
