@@ -144,6 +144,7 @@ class _ChartStateMobile extends _ChartState {
                   crosshairVariant: widget.crosshairVariant,
                   interactiveLayerBehaviour: widget.interactiveLayerBehaviour,
                   useDrawingToolsV2: widget.useDrawingToolsV2,
+                  enableYAxisScaling: widget.enableYAxisScaling,
                 ),
                 Align(
                   alignment: Alignment.topLeft,

@@ -7,6 +7,7 @@ import 'package:deriv_chart/src/theme/colors.dart';
 import 'package:deriv_chart/src/theme/dimens.dart';
 import 'package:deriv_chart/src/theme/text_styles.dart';
 import 'package:deriv_chart/src/widgets/bottom_indicator_title.dart';
+import 'package:deriv_chart/src/widgets/reset_y_axis_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'basic_chart.dart';
@@ -69,6 +70,10 @@ class BottomChartMobile extends BasicChart {
 class _BottomChartMobileState extends BasicChartState<BottomChartMobile> {
   ChartTheme get theme => context.read<ChartTheme>();
 
+  /// Builds a button to reset the Y-axis scaling to auto-fit mode.
+  Widget _buildResetYAxisButton() =>
+      ResetYAxisButton(onPressed: resetYAxisScale);
+
   @override
   Widget build(BuildContext context) {
     final ChartConfig chartConfig = ChartConfig(
@@ -103,7 +108,23 @@ class _BottomChartMobileState extends BasicChartState<BottomChartMobile> {
                     top: 4,
                     left: widget.bottomChartTitleMargin?.left ?? 10,
                     child: _buildIndicatorLabelMobile(),
-                  )
+                  ),
+                  // Y-axis scale gesture layer - must be on top to intercept gestures
+                  // from parent scrollable widgets like CustomScrollView
+                  buildYAxisScaleGestureLayer(),
+                  // Reset Y-axis scale button - shown when user has manually scaled the Y-axis
+                  // Must be above the gesture layer to receive tap events
+                  if (widget.enableYAxisScaling)
+                    ValueListenableBuilder<bool>(
+                      valueListenable: isYAxisScaledNotifier,
+                      builder: (context, isScaled, _) => isScaled
+                          ? Positioned(
+                              bottom: 4,
+                              right: 4,
+                              child: _buildResetYAxisButton(),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
                 ],
               ),
       ),

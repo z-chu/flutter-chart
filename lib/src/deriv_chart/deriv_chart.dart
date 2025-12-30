@@ -70,11 +70,16 @@ class DerivChart extends StatefulWidget {
     this.crosshairVariant = CrosshairVariant.smallScreen,
     this.interactiveLayerBehaviour,
     this.useDrawingToolsV2 = false,
+    this.enableYAxisScaling = true,
     Key? key,
   }) : super(key: key);
 
   /// Whether to use the new drawing tools v2 or not.
   final bool useDrawingToolsV2;
+
+  /// Whether to enable Y-axis scaling by dragging on the quote labels area.
+  /// Defaults to true.
+  final bool enableYAxisScaling;
 
   /// Chart's main data series
   final DataSeries<Tick> mainSeries;
@@ -409,6 +414,7 @@ class _DerivChartState extends State<DerivChart> {
                 crosshairVariant: widget.crosshairVariant,
                 interactiveLayerBehaviour: _interactiveLayerBehaviour,
                 useDrawingToolsV2: widget.useDrawingToolsV2,
+                enableYAxisScaling: widget.enableYAxisScaling,
               ),
               if (widget.indicatorsRepo == null) _buildIndicatorsIcon(),
               if (widget.drawingToolsRepo == null) _buildDrawingToolsIcon(),

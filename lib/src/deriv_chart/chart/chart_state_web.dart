@@ -49,6 +49,7 @@ class _ChartStateWeb extends _ChartState {
             crosshairVariant: widget.crosshairVariant,
             interactiveLayerBehaviour: widget.interactiveLayerBehaviour,
             useDrawingToolsV2: widget.useDrawingToolsV2,
+            enableYAxisScaling: widget.enableYAxisScaling,
           ),
         ),
         if (bottomSeries?.isNotEmpty ?? false)

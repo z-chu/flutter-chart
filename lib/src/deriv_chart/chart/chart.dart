@@ -79,6 +79,7 @@ class Chart extends StatefulWidget {
     this.showScrollToLastTickButton,
     this.loadingAnimationColor,
     this.useDrawingToolsV2 = false,
+    this.enableYAxisScaling = true,
     Key? key,
   }) : super(key: key);
 
@@ -201,6 +202,10 @@ class Chart extends StatefulWidget {
 
   /// The interactive layer behaviour.
   final InteractiveLayerBehaviour? interactiveLayerBehaviour;
+
+  /// Whether to enable Y-axis scaling by dragging on the quote labels area.
+  /// Defaults to true.
+  final bool enableYAxisScaling;
 
   @override
   State<StatefulWidget> createState() =>

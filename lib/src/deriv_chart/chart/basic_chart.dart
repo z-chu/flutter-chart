@@ -4,7 +4,6 @@ import 'package:deriv_chart/src/deriv_chart/chart/y_axis/y_axis_config.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/y_axis/y_grid_label_painter.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/y_axis/y_grid_label_painter_web.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/y_axis/y_grid_line_painter.dart';
-import 'package:deriv_chart/src/deriv_chart/chart/gestures/gesture_manager.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/x_axis/x_axis_model.dart';
 import 'package:deriv_chart/src/models/chart_axis_config.dart';
 import 'package:deriv_chart/src/models/chart_config.dart';
@@ -35,6 +34,7 @@ class BasicChart extends StatefulWidget {
     this.onQuoteAreaChanged,
     this.currentTickAnimationDuration = _defaultDuration,
     this.quoteBoundsAnimationDuration = _defaultDuration,
+    this.enableYAxisScaling = true,
   })  : chartAxisConfig = chartAxisConfig ?? const ChartAxisConfig(),
         super(key: key);
 
@@ -59,6 +59,10 @@ class BasicChart extends StatefulWidget {
   /// Duration of quote bounds animated transition.
   final Duration quoteBoundsAnimationDuration;
 
+  /// Whether to enable Y-axis scaling by dragging on the quote labels area.
+  /// Defaults to true.
+  final bool enableYAxisScaling;
+
   @override
   BasicChartState<BasicChart> createState() => BasicChartState<BasicChart>();
 }
@@ -69,13 +73,19 @@ class BasicChartState<T extends BasicChart> extends State<T>
   /// Width of the touch area for vertical zoom (on top of quote labels).
   double quoteLabelsTouchAreaWidth = 70;
 
-  bool _panStartedOnQuoteLabelsArea = false;
-
   /// The canvas size to draw the chart series and other options inside.
   Size? canvasSize;
 
-  /// Chart widget's position on the screen.
-  Offset? chartPosition;
+  /// Notifier for whether the Y-axis has been manually scaled by the user.
+  /// When true, the reset Y-axis button should be shown.
+  /// Using ValueNotifier to avoid rebuilding the gesture layer when the value changes.
+  final ValueNotifier<bool> isYAxisScaledNotifier = ValueNotifier<bool>(false);
+
+  /// Whether the Y-axis has been manually scaled by the user.
+  bool get isYAxisScaled => isYAxisScaledNotifier.value;
+
+  /// The default vertical padding fraction used for auto-fit mode.
+  static const double _defaultVerticalPaddingFraction = 0.1;
 
   final GlobalKey _key = GlobalKey();
 
@@ -84,7 +94,7 @@ class BasicChartState<T extends BasicChart> extends State<T>
 
   /// Fraction of the chart's height taken by top or bottom padding.
   /// Quote scaling (drag on quote area) is controlled by this variable.
-  double verticalPaddingFraction = 0.1;
+  double verticalPaddingFraction = _defaultVerticalPaddingFraction;
 
   /// Padding should be at least half of barrier label height.
   static const double minPadding = 10;
@@ -133,8 +143,6 @@ class BasicChartState<T extends BasicChart> extends State<T>
 
   double get _bottomPadding => verticalPadding;
 
-  late GestureManagerState _gestureManager;
-
   /// The xAxis model of the chart.
   XAxisModel get xAxis => context.read<XAxisModel>();
 
@@ -145,14 +153,6 @@ class BasicChartState<T extends BasicChart> extends State<T>
     super.initState();
     _setupInitialBounds();
     setupAnimations();
-    _setupGestures();
-    _updateChartPosition();
-  }
-
-  void _setupGestures() {
-    _gestureManager = context.read<GestureManagerState>()
-      ..registerCallback(_onPanStart)
-      ..registerCallback(_onPanUpdate);
   }
 
   @override
@@ -160,7 +160,6 @@ class BasicChartState<T extends BasicChart> extends State<T>
     super.didUpdateWidget(oldWidget as T);
 
     didUpdateChartData(oldWidget);
-    _updateChartPosition();
   }
 
   /// Whether the chart data did update or not.
@@ -189,9 +188,10 @@ class BasicChartState<T extends BasicChart> extends State<T>
     topBoundQuoteAnimationController.dispose();
     bottomBoundQuoteAnimationController.dispose();
 
+    isYAxisScaledNotifier.dispose();
+
     _isTickAnimationPlaying = false;
 
-    _clearGestures();
     super.dispose();
   }
 
@@ -289,12 +289,6 @@ class BasicChartState<T extends BasicChart> extends State<T>
     }
   }
 
-  void _clearGestures() {
-    _gestureManager
-      ..removeCallback(_onPanStart)
-      ..removeCallback(_onPanUpdate);
-  }
-
   /// Updates the visible data to be shown inside the chart with updating the
   /// right bound and left bound epoch.
   void updateVisibleData() =>
@@ -378,9 +372,6 @@ class BasicChartState<T extends BasicChart> extends State<T>
               _buildChartData(),
               if (context.read<ChartConfig>().chartAxisConfig.showQuoteGrid)
                 _buildQuoteGridLabel(gridLineQuotes),
-              // Y-axis scale gesture layer - handles vertical scaling on quote labels area
-              // This layer intercepts gestures to prevent CustomScrollView from capturing them
-              _buildYAxisScaleGestureLayer(),
             ],
           );
         },
@@ -483,24 +474,19 @@ class BasicChartState<T extends BasicChart> extends State<T>
         ),
       );
 
-  void _onPanStart(ScaleStartDetails details) {
-    _panStartedOnQuoteLabelsArea = _onQuoteLabelsTouchArea(details.focalPoint);
-  }
-
-  void _onPanUpdate(DragUpdateDetails details) {
-    if (_panStartedOnQuoteLabelsArea &&
-        _onQuoteLabelsTouchArea(details.globalPosition)) {
-      _scaleVertically(details.delta.dy);
-    }
-  }
-
   /// Builds a gesture layer for Y-axis scaling that intercepts vertical drag
   /// gestures on the quote labels area.
   ///
   /// This layer is positioned on the right side of the chart (quote labels area)
   /// and uses [HitTestBehavior.opaque] to prevent gesture events from being
   /// passed to parent scrollable widgets like [CustomScrollView].
-  Widget _buildYAxisScaleGestureLayer() {
+  ///
+  /// Returns [SizedBox.shrink] if [BasicChart.enableYAxisScaling] is false.
+  @protected
+  Widget buildYAxisScaleGestureLayer() {
+    if (!widget.enableYAxisScaling) {
+      return const SizedBox.shrink();
+    }
     return Positioned(
       right: 0,
       top: 0,
@@ -516,27 +502,26 @@ class BasicChartState<T extends BasicChart> extends State<T>
     );
   }
 
-  void _updateChartPosition() =>
-      WidgetsFlutterBinding.ensureInitialized().addPostFrameCallback((_) {
-        final RenderBox? box =
-            _key.currentContext?.findRenderObject() as RenderBox?;
-        final Offset? position = box?.localToGlobal(Offset.zero);
-        if (position != null && chartPosition != position) {
-          chartPosition = Offset(position.dx, position.dy);
-        }
-      });
-
-  bool _onQuoteLabelsTouchArea(Offset position) =>
-      chartPosition != null &&
-      position.dx > (xAxis.width! - quoteLabelsTouchAreaWidth) &&
-      position.dy > chartPosition!.dy &&
-      position.dy < chartPosition!.dy + canvasSize!.height;
-
   void _scaleVertically(double dy) {
     setState(() {
       verticalPaddingFraction =
           ((verticalPadding + dy) / canvasSize!.height).clamp(0.05, 0.49);
     });
+    // Update the notifier without triggering setState to avoid gesture interruption
+    if (!isYAxisScaledNotifier.value) {
+      isYAxisScaledNotifier.value = true;
+    }
+    _onScaleYAxis();
+  }
+
+  /// Resets the Y-axis scaling to auto-fit mode.
+  /// This restores the default vertical padding fraction and hides the reset button.
+  @protected
+  void resetYAxisScale() {
+    setState(() {
+      verticalPaddingFraction = _defaultVerticalPaddingFraction;
+    });
+    isYAxisScaledNotifier.value = false;
     _onScaleYAxis();
   }
 

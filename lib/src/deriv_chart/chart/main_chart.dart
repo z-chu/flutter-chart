@@ -14,6 +14,7 @@ import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/markers/mar
 import 'package:deriv_chart/src/deriv_chart/chart/loading_animation.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/x_axis/x_axis_model.dart';
 import 'package:deriv_chart/src/models/chart_config.dart';
+import 'package:deriv_chart/src/widgets/reset_y_axis_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../drawing_tool_chart/drawing_tool_chart.dart';
@@ -62,6 +63,7 @@ class MainChart extends BasicChart {
     this.showCurrentTickBlinkAnimation = true,
     super.currentTickAnimationDuration,
     super.quoteBoundsAnimationDuration,
+    super.enableYAxisScaling,
     double opacity = 1,
     ChartAxisConfig? chartAxisConfig,
     VisibleQuoteAreaChangedCallback? onQuoteAreaChanged,
@@ -446,6 +448,22 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
                     left: 0,
                     child: _buildDataFitButton(),
                   ),
+                // Y-axis scale gesture layer - must be on top to intercept gestures
+                // from parent scrollable widgets like CustomScrollView
+                buildYAxisScaleGestureLayer(),
+                // Reset Y-axis scale button - shown when user has manually scaled the Y-axis
+                // Must be above the gesture layer to receive tap events
+                if (widget.enableYAxisScaling)
+                  ValueListenableBuilder<bool>(
+                    valueListenable: isYAxisScaledNotifier,
+                    builder: (context, isScaled, _) => isScaled
+                        ? Positioned(
+                            bottom: 4,
+                            right: 4,
+                            child: _buildResetYAxisButton(),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
               ],
             ),
           );
@@ -606,6 +624,10 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
       ),
     );
   }
+
+  /// Builds a button to reset the Y-axis scaling to auto-fit mode.
+  Widget _buildResetYAxisButton() =>
+      ResetYAxisButton(onPressed: resetYAxisScale);
 
   @override
   List<double> getSeriesMinMaxValue() {
