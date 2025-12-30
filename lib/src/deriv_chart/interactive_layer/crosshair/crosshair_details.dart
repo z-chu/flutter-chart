@@ -4,6 +4,7 @@ import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshai
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/find.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_series/data_series.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/helpers/chart_date_utils.dart';
+import 'package:deriv_chart/src/models/chart_time_config.dart';
 import 'package:deriv_chart/src/models/tick.dart';
 import 'package:deriv_chart/src/theme/chart_theme.dart';
 import 'package:provider/provider.dart';
@@ -76,10 +77,17 @@ class CrosshairDetails extends StatelessWidget {
   }
 
   Widget _buildTimeLabel(
-      BuildContext context, CrosshairVariant crosshairVariant) {
-    final String date = ChartDateUtils.formatDate(crosshairTick.epoch);
-    final String time =
-        ChartDateUtils.formatTimeWithSeconds(crosshairTick.epoch);
+    BuildContext context,
+    CrosshairVariant crosshairVariant,
+  ) {
+    final String date = ChartDateUtils.formatDate(
+      crosshairTick.epoch,
+      isUtc: ChartTimeConfig.isUtc,
+    );
+    final String time = ChartDateUtils.formatTimeWithSeconds(
+      crosshairTick.epoch,
+      isUtc: ChartTimeConfig.isUtc,
+    );
     final ChartTheme theme = context.watch<ChartTheme>();
     final style = theme.crosshairInformationBoxTimeLabelStyle.copyWith(
       color: theme.crosshairInformationBoxTextSubtle,

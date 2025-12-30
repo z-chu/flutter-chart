@@ -99,22 +99,26 @@ class MinMaxIndices {
   final int maxIndex;
 }
 
-/// Converts an epoch timestamp in milliseconds to a formatted GMT date-time
-/// string.
+/// Converts an epoch timestamp in milliseconds to a formatted date-time string.
 ///
 /// This method takes an epoch timestamp (number of milliseconds since the
-/// Unix epoch) and converts it to a GMT (UTC) date-time string in the
-/// format 'yy-MM-dd HH:mm:ss'.
+/// Unix epoch) and converts it to a date-time string in the format
+/// 'yy-MM-dd HH:mm:ss'. The timezone used depends on [ChartTimeConfig.useLocalTime].
+///
+/// When [ChartTimeConfig.useLocalTime] is `true` (default), the time is displayed
+/// in local timezone. When `false`, it displays in UTC with 'GMT' suffix.
 ///
 /// Example:
 /// ```dart
-/// String gmtDateTime = formatEpochToGMTDateTime(1633072800000);
-/// print(gmtDateTime); // Output: "21-10-01 00:00:00 GMT"
+/// String dateTime = formatEpochToGMTDateTime(1633072800000);
+/// print(dateTime); // Output depends on ChartTimeConfig.useLocalTime setting
 /// ```
 String formatEpochToGMTDateTime(int epochMillis) {
+  final bool isUtc = ChartTimeConfig.isUtc;
   final dateTime =
-      DateTime.fromMillisecondsSinceEpoch(epochMillis, isUtc: true);
-  return '${DateFormat('yy-MM-dd HH:mm:ss').format(dateTime)} GMT';
+      DateTime.fromMillisecondsSinceEpoch(epochMillis, isUtc: isUtc);
+  final String formatted = DateFormat('yy-MM-dd HH:mm:ss').format(dateTime);
+  return isUtc ? '$formatted GMT' : formatted;
 }
 
 /// Returns the appropriate color of the marker based on its running state

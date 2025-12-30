@@ -4,6 +4,7 @@ import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_data.
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/drawing_tools/data_model/drawing_paint_style.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/drawing_tools/data_model/edge_point.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/helpers/chart_date_utils.dart';
+import 'package:deriv_chart/src/models/chart_time_config.dart';
 import 'package:deriv_chart/src/theme/painting_styles/line_style.dart';
 import 'package:flutter/material.dart';
 
@@ -282,7 +283,10 @@ void drawEpochLabel({
 }) {
   // Calculate X position based on the epoch
   final double xPosition = epochToX(epoch);
-  final String formattedTime = ChartDateUtils.formatCompactDateTime(epoch);
+  final String formattedTime = ChartDateUtils.formatCompactDateTime(
+    epoch,
+    isUtc: ChartTimeConfig.isUtc,
+  );
 
   // Create text painter to measure text dimensions
   final TextPainter textPainter = _getTextPainter(

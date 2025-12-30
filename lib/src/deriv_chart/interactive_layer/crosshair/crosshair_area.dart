@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_series/data_series.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/helpers/chart_date_utils.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/x_axis/x_axis_model.dart';
+import 'package:deriv_chart/src/models/chart_time_config.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_highlight_painter.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_variant.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/large_screen_crosshair_line_painter.dart';
@@ -214,7 +215,10 @@ class CrosshairArea extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  ChartDateUtils.formatDateTimeWithSeconds(tick.epoch),
+                  ChartDateUtils.formatDateTimeWithSeconds(
+                    tick.epoch,
+                    isUtc: ChartTimeConfig.isUtc,
+                  ),
                   style: theme.crosshairAxisLabelStyle.copyWith(
                     color: theme.crosshairInformationBoxTextDefault,
                   ),
