@@ -567,7 +567,9 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
         clipBehavior: Clip.antiAlias,
         child: IconButton(
           icon: const Icon(Icons.arrow_forward),
-          onPressed: xAxis.scrollToLastTick,
+          onPressed: () {
+            xAxis.scrollToLastTick(animate: true, resetOffset: true);
+          },
           color: context.read<ChartTheme>().base01Color,
         ),
       );

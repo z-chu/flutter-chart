@@ -571,7 +571,10 @@ class XAxisModel extends ChangeNotifier {
     if (!resetOffset && _entries != null && _entries!.isNotEmpty) {
       // Preserve current offset from the last tick
       final int lastTickEpoch = _entries!.last.epoch;
-      final double currentOffset = pxBetween(lastTickEpoch, _rightBoundEpoch);
+      // Handle both cases: when lastTickEpoch is before or after _rightBoundEpoch
+      final double currentOffset = lastTickEpoch <= _rightBoundEpoch
+          ? pxBetween(lastTickEpoch, _rightBoundEpoch)
+          : -pxBetween(_rightBoundEpoch, lastTickEpoch);
       // Clamp to maxCurrentTickOffset to ensure we don't exceed the limit
       offsetToUse = currentOffset.clamp(0, _maxCurrentTickOffset);
     } else {
