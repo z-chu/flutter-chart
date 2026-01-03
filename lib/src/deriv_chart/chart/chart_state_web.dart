@@ -30,7 +30,9 @@ class _ChartStateWeb extends _ChartState {
             onCrosshairAppeared: widget.onCrosshairAppeared,
             onQuoteAreaChanged: widget.onQuoteAreaChanged,
             isLive: widget.isLive,
-            showLoadingAnimationForHistoricalData: !widget.dataFitEnabled,
+            showLoadingAnimationForHistoricalData:
+                widget.showLoadingAnimationForHistoricalData &&
+                    !widget.dataFitEnabled,
             showDataFitButton:
                 widget.showDataFitButton ?? widget.dataFitEnabled,
             showScrollToLastTickButton:

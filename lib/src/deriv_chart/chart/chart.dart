@@ -77,6 +77,7 @@ class Chart extends StatefulWidget {
     this.bottomChartTitleMargin,
     this.showDataFitButton,
     this.showScrollToLastTickButton,
+    this.showLoadingAnimationForHistoricalData = true,
     this.loadingAnimationColor,
     this.useDrawingToolsV2 = false,
     this.enableYAxisScaling = true,
@@ -187,6 +188,14 @@ class Chart extends StatefulWidget {
 
   /// Whether to show the scroll to last tick button or not.
   final bool? showScrollToLastTickButton;
+
+  /// Whether to show the loading animation for historical data.
+  ///
+  /// When set to `false`, the loading animation will always be hidden.
+  /// When set to `true` (default), the visibility will be determined by
+  /// the [dataFitEnabled] property (hidden when dataFitEnabled is true,
+  /// shown otherwise).
+  final bool showLoadingAnimationForHistoricalData;
 
   /// The color of the loading animation.
   final Color? loadingAnimationColor;
