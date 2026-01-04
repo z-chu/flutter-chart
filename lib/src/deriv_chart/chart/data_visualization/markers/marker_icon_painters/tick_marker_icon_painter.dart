@@ -41,6 +41,12 @@ import 'dart:math' as math;
 /// This class is part of the chart's visualization pipeline and works in conjunction
 /// with `MarkerGroupPainter` to render marker groups on the chart canvas.
 class TickMarkerIconPainter extends MarkerGroupIconPainter {
+  /// A map to store the previous remaining duration for each marker group.
+  /// This is used to create smooth animations between updates by interpolating
+  /// from the actual previous value instead of calculating an estimated one.
+  /// Key: marker group ID, Value: previous remaining duration (0.0 to 1.0)
+  final Map<String, double> _previousRemainingDurations = <String, double>{};
+
   /// Renders a group of tick contract markers on the chart canvas.
   ///
   /// This method is called by the chart's rendering system to paint a group of
@@ -538,24 +544,27 @@ class TickMarkerIconPainter extends MarkerGroupIconPainter {
         final double baseProgress = baseElapsed / totalDuration;
         baseRemainingDuration = (1.0 - baseProgress).clamp(0.0, 1.0);
 
-        // Apply smooth animation transition using currentTickPercent
-        // This creates smooth interpolation between tick updates
-        if (animationInfo.currentTickPercent < 1.0) {
-          // Calculate the progress that would occur in one granularity period
-          final double progressPerGranularity =
-              granularity / totalDuration.toDouble();
+        // Get the marker group ID for tracking animation state
+        final String? groupId = markerGroup.id;
 
-          // Calculate the previous remaining duration (before current tick)
-          final double previousRemainingDuration =
-              (baseRemainingDuration + progressPerGranularity).clamp(0.0, 1.0);
+        if (groupId != null) {
+          // Get the actual previous remaining duration from our stored values
+          final double? previousRemainingDuration =
+              _previousRemainingDurations[groupId];
 
-          // Interpolate between previous and current duration using currentTickPercent
-          baseRemainingDuration = ui.lerpDouble(
-                previousRemainingDuration,
-                baseRemainingDuration,
-                animationInfo.currentTickPercent,
-              ) ??
-              baseRemainingDuration;
+          // Apply smooth animation transition using currentTickPercent
+          // Only interpolate if we have a previous value to interpolate from
+          if (previousRemainingDuration != null &&
+              animationInfo.currentTickPercent < 1.0) {
+            // Interpolate between the actual previous value and current value
+            baseRemainingDuration = ui.lerpDouble(
+                  previousRemainingDuration,
+                  baseRemainingDuration,
+                  animationInfo.currentTickPercent,
+                ) ??
+                baseRemainingDuration;
+          }
+          _previousRemainingDurations[groupId] = baseRemainingDuration;
         }
       }
     }
