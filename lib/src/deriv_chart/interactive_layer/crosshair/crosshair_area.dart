@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_series/data_series.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/helpers/chart_date_utils.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/x_axis/x_axis_model.dart';
@@ -76,41 +74,6 @@ class CrosshairArea extends StatelessWidget {
   /// If no position is provided, it uses the last known long press position.
   /// Returns the closest [Tick] to the specified or default position, or null if none found.
   final Tick? Function([double?]) updateAndFindClosestTick;
-
-  /// Calculates the optimal vertical position for the crosshair details box.
-  ///
-  /// In Flutter canvas, the coordinate system has (0,0) at the top-left corner,
-  /// with y-values increasing downward. This method calculates a position that
-  /// places the details box above the cursor with appropriate spacing.
-  ///
-  /// The calculation works as follows:
-  /// 1. Start with the cursor's Y position
-  /// 2. Subtract the height of the details box (100px) to position it above the cursor
-  /// 3. Subtract an additional gap (120px) to create space between the cursor and the box
-  /// 4. Ensure the box doesn't go too close to the top edge by using max(10, result)
-  ///
-  /// This ensures the details box is visible and well-positioned relative to the cursor,
-  /// while preventing it from being rendered partially off-screen at the top.
-  ///
-  /// Parameters:
-  /// - [cursorY]: The Y-coordinate of the cursor on the canvas
-  ///
-  /// Returns:
-  /// The Y-coordinate (top position) where the details box should be rendered.
-  /// The value is guaranteed to be at least 10 pixels from the top of the canvas.
-  double _calculateDetailsPosition(
-      {required double cursorY, required Tick tick}) {
-    // Height of the details information box in pixels
-    final double detailsBoxHeight = mainSeries.getCrosshairDetailsBoxHeight();
-
-    // Additional vertical gap between the cursor and the details box
-    // This ensures the box doesn't overlap with or crowd the cursor
-    const double gap = 120;
-
-    // Calculate position and ensure it's at least 10px from the top edge
-    // This prevents the box from being rendered partially off-screen
-    return max(10, cursorY - detailsBoxHeight - gap);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -234,19 +197,52 @@ class CrosshairArea extends StatelessWidget {
 
   AnimatedPositioned _buildCrosshairDetails(
       BoxConstraints constraints, XAxisModel xAxis, Tick? tick) {
+    // For smallScreen: center the info box on the selected tick (original behavior)
+    // For largeScreen: position info box on the opposite side of the tick to avoid covering it
+    final bool isSmallScreen = crosshairVariant == CrosshairVariant.smallScreen;
+
+    if (isSmallScreen) {
+      // SmallScreen mode: center the info box on the selected tick
+      return AnimatedPositioned(
+        duration: animationDuration,
+        top: 8,
+        bottom: 0,
+        width: constraints.maxWidth,
+        left: xAxis.xFromEpoch(tick!.epoch) - constraints.maxWidth / 2,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: CrosshairDetails(
+            mainSeries: mainSeries,
+            crosshairTick: tick,
+            pipSize: pipSize,
+            crosshairVariant: crosshairVariant,
+          ),
+        ),
+      );
+    }
+
+    // LargeScreen mode: position info box on the opposite side of the tick
+    // Determine if the tick is on the right side of the chart area
+    // Use graphAreaWidth (chart drawing area) instead of full width to exclude quote labels area
+    final double tickX = xAxis.xFromEpoch(tick!.epoch);
+    final double chartAreaWidth = xAxis.graphAreaWidth ?? constraints.maxWidth;
+    final bool isTickOnRightSide = tickX > chartAreaWidth / 2;
+
+    // Calculate the right padding (quote labels area width)
+    final double rightPadding = xAxis.rightPadding ?? 0;
+
     return AnimatedPositioned(
       duration: animationDuration,
       // Position the details above the cursor with a gap
-      // Use cursorY which is the cursor's Y position
-      // Subtract the height of the details box plus a gap
-      top: crosshairVariant == CrosshairVariant.smallScreen
-          ? 8
-          : _calculateDetailsPosition(cursorY: cursorPosition.dy, tick: tick!),
+      top: 8,
       bottom: 0,
-      width: constraints.maxWidth,
-      left: xAxis.xFromEpoch(tick!.epoch) - constraints.maxWidth / 2,
+      // If tick is on right side, show info box on left; otherwise show on right
+      // This prevents the info box from covering the selected candlestick
+      // When showing on right, add rightPadding to keep it within the chart area
+      left: isTickOnRightSide ? 16 : null,
+      right: isTickOnRightSide ? null : 16 + rightPadding,
       child: Align(
-        alignment: Alignment.topCenter,
+        alignment: isTickOnRightSide ? Alignment.topLeft : Alignment.topRight,
         child: CrosshairDetails(
           mainSeries: mainSeries,
           crosshairTick: tick,
