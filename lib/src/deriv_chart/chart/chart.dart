@@ -448,7 +448,11 @@ abstract class _ChartState extends State<Chart> with WidgetsBindingObserver {
         oldWidget.mainSeries.input.isNotEmpty) {
       if (widget.mainSeries.input.first.epoch !=
           oldWidget.mainSeries.input.first.epoch) {
-        _controller.onScrollToLastTick?.call(animate: false, resetOffset: true);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _controller.onCompleteTickAnimation?.call();
+          _controller.onScrollToLastTick
+              ?.call(animate: false, resetOffset: true);
+        });
       }
     }
 
