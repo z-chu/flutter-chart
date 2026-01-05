@@ -446,8 +446,12 @@ abstract class _ChartState extends State<Chart> with WidgetsBindingObserver {
     // scroll to last tick
     if (widget.mainSeries.input.isNotEmpty &&
         oldWidget.mainSeries.input.isNotEmpty) {
-      if (widget.mainSeries.input.first.epoch !=
-          oldWidget.mainSeries.input.first.epoch) {
+      final bool firstChanged = widget.mainSeries.input.first.epoch !=
+          oldWidget.mainSeries.input.first.epoch;
+      final bool lastChanged = widget.mainSeries.input.last.epoch !=
+          oldWidget.mainSeries.input.last.epoch;
+
+      if (firstChanged && lastChanged) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _controller.onCompleteTickAnimation?.call();
           _controller.onScrollToLastTick
