@@ -180,7 +180,7 @@ class BasicChartState<T extends BasicChart> extends State<T>
     if (oldMinEpoch == null ||
         (oldMinEpoch != widget.mainSeries.getMinEpoch() &&
             oldChart.mainSeries.getMaxEpoch() !=
-                widget.mainSeries.getMaxEpoch())) { 
+                widget.mainSeries.getMaxEpoch())) {
       _shouldSkipBoundsAnimation = true;
     }
 
@@ -326,29 +326,32 @@ class BasicChartState<T extends BasicChart> extends State<T>
       maxQuote += 2;
     }
 
-    if (!minQuote.isNaN && minQuote != bottomBoundQuoteTarget) {
+    final bool needsBottomUpdate =
+        !minQuote.isNaN && minQuote != bottomBoundQuoteTarget;
+    final bool needsTopUpdate =
+        !maxQuote.isNaN && maxQuote != topBoundQuoteTarget;
+
+    if (needsBottomUpdate) {
       bottomBoundQuoteTarget = minQuote;
-      if (_shouldSkipBoundsAnimation) {
-        // First load or data reset: set value directly without animation
-        bottomBoundQuoteAnimationController.value = bottomBoundQuoteTarget;
-      } else {
-        bottomBoundQuoteAnimationController.animateTo(
-          bottomBoundQuoteTarget,
-          curve: Curves.easeOut,
-        );
-      }
     }
-    if (!maxQuote.isNaN && maxQuote != topBoundQuoteTarget) {
+    if (needsTopUpdate) {
       topBoundQuoteTarget = maxQuote;
-      if (_shouldSkipBoundsAnimation) {
-        // First load or data reset: set value directly without animation
-        topBoundQuoteAnimationController.value = topBoundQuoteTarget;
-      } else {
-        topBoundQuoteAnimationController.animateTo(
-          topBoundQuoteTarget,
-          curve: Curves.easeOut,
-        );
-      }
+    }
+
+    if (needsBottomUpdate) {
+      bottomBoundQuoteAnimationController.animateTo(
+        bottomBoundQuoteTarget,
+        // Use Duration.zero for instant update without animation on first load/data reset
+        duration: _shouldSkipBoundsAnimation ? Duration.zero : null,
+        curve: Curves.easeOut,
+      );
+    }
+    if (needsTopUpdate) {
+      topBoundQuoteAnimationController.animateTo(
+        topBoundQuoteTarget,
+        duration: _shouldSkipBoundsAnimation ? Duration.zero : null,
+        curve: Curves.easeOut,
+      );
     }
 
     // Mark animation skip as complete after setting valid bounds
