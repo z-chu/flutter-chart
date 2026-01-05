@@ -444,11 +444,11 @@ abstract class _ChartState extends State<Chart> with WidgetsBindingObserver {
 
     //check if entire entries changes(market or granularity changes)
     // scroll to last tick
-    if (widget.mainSeries.entries != null &&
-        widget.mainSeries.entries!.isNotEmpty) {
-      if (widget.mainSeries.entries!.first.epoch !=
-          oldWidget.mainSeries.entries!.first.epoch) {
-        _controller.onScrollToLastTick?.call(animate: false);
+    if (widget.mainSeries.input.isNotEmpty &&
+        oldWidget.mainSeries.input.isNotEmpty) {
+      if (widget.mainSeries.input.first.epoch !=
+          oldWidget.mainSeries.input.first.epoch) {
+        _controller.onScrollToLastTick?.call(animate: false, resetOffset: true);
       }
     }
 

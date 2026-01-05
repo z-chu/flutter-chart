@@ -561,22 +561,25 @@ class XAxisModel extends ChangeNotifier {
   ///
   /// If [resetOffset] is true, scrolls to [_initialCurrentTickOffset]
   /// (or [_maxCurrentTickOffset] if initial offset is not set).
-  /// Otherwise, preserves the current offset from the last tick.
+  /// Otherwise, preserves the current offset from the last tick if visible,
+  /// or falls back to initial offset if not visible.
   void scrollToLastTick({bool animate = true, bool resetOffset = false}) {
     final Duration duration =
-        animate ? const Duration(milliseconds: 600) : Duration.zero;
+        animate ? const Duration(milliseconds: 350) : Duration.zero;
 
     // Calculate the offset to use
     final double offsetToUse;
     if (!resetOffset && _entries != null && _entries!.isNotEmpty) {
-      // Preserve current offset from the last tick
       final int lastTickEpoch = _entries!.last.epoch;
-      // Handle both cases: when lastTickEpoch is before or after _rightBoundEpoch
-      final double currentOffset = lastTickEpoch <= _rightBoundEpoch
-          ? pxBetween(lastTickEpoch, _rightBoundEpoch)
-          : -pxBetween(_rightBoundEpoch, lastTickEpoch);
-      // Clamp to maxCurrentTickOffset to ensure we don't exceed the limit
-      offsetToUse = currentOffset.clamp(0, _maxCurrentTickOffset);
+      // Check if last tick is visible (within the right bound)
+      if (lastTickEpoch <= _rightBoundEpoch) {
+        // Last tick is visible - preserve current offset
+        final double currentOffset = pxBetween(lastTickEpoch, _rightBoundEpoch);
+        offsetToUse = currentOffset.clamp(0, _maxCurrentTickOffset);
+      } else {
+        // Last tick is not visible - use initial offset (same as resetOffset = true)
+        offsetToUse = _initialCurrentTickOffset ?? _maxCurrentTickOffset;
+      }
     } else {
       // Use initialCurrentTickOffset if set, otherwise fall back to max
       offsetToUse = _initialCurrentTickOffset ?? _maxCurrentTickOffset;
