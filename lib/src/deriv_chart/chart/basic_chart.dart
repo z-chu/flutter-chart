@@ -326,32 +326,48 @@ class BasicChartState<T extends BasicChart> extends State<T>
       maxQuote += 2;
     }
 
-    final bool needsBottomUpdate =
-        !minQuote.isNaN && minQuote != bottomBoundQuoteTarget;
-    final bool needsTopUpdate =
-        !maxQuote.isNaN && maxQuote != topBoundQuoteTarget;
-
-    if (needsBottomUpdate) {
+    if (!minQuote.isNaN && minQuote != bottomBoundQuoteTarget) {
       bottomBoundQuoteTarget = minQuote;
+      if (_shouldSkipBoundsAnimation) {
+        // First load or data reset: set value directly without animation
+        // bottomBoundQuoteAnimationController.value = bottomBoundQuoteTarget;
+        bottomBoundQuoteAnimationController
+          ..removeListener(_quoteAnimationListener)
+          ..dispose();
+        bottomBoundQuoteAnimationController = AnimationController.unbounded(
+          value: bottomBoundQuoteTarget,
+          vsync: this,
+          duration: widget.quoteBoundsAnimationDuration,
+        );
+        bottomBoundQuoteAnimationController
+            .addListener(_quoteAnimationListener);
+      } else {
+        bottomBoundQuoteAnimationController.animateTo(
+          bottomBoundQuoteTarget,
+          curve: Curves.easeOut,
+        );
+      }
     }
-    if (needsTopUpdate) {
+    if (!maxQuote.isNaN && maxQuote != topBoundQuoteTarget) {
       topBoundQuoteTarget = maxQuote;
-    }
-
-    if (needsBottomUpdate) {
-      bottomBoundQuoteAnimationController.animateTo(
-        bottomBoundQuoteTarget,
-        // Use Duration.zero for instant update without animation on first load/data reset
-        duration: _shouldSkipBoundsAnimation ? Duration.zero : null,
-        curve: Curves.easeOut,
-      );
-    }
-    if (needsTopUpdate) {
-      topBoundQuoteAnimationController.animateTo(
-        topBoundQuoteTarget,
-        duration: _shouldSkipBoundsAnimation ? Duration.zero : null,
-        curve: Curves.easeOut,
-      );
+      if (_shouldSkipBoundsAnimation) {
+        // First load or data reset: set value directly without animation
+        // topBoundQuoteAnimationController.value = topBoundQuoteTarget;
+        topBoundQuoteAnimationController
+          ..removeListener(_quoteAnimationListener)
+          ..dispose();
+        topBoundQuoteAnimationController = AnimationController.unbounded(
+          value: topBoundQuoteTarget,
+          vsync: this,
+          duration: widget.quoteBoundsAnimationDuration,
+        );
+        topBoundQuoteAnimationController.addListener(_quoteAnimationListener);
+      } else {
+        topBoundQuoteAnimationController.animateTo(
+          topBoundQuoteTarget,
+          curve: Curves.easeOut,
+        );
+      }
     }
 
     // Mark animation skip as complete after setting valid bounds
