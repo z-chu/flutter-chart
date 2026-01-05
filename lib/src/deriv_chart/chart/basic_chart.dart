@@ -105,6 +105,10 @@ class BasicChartState<T extends BasicChart> extends State<T>
   /// Bottom quote bound target for animated transition.
   double bottomBoundQuoteTarget = 30;
 
+  /// Whether bounds animation should be skipped.
+  /// True on initial data load or after data reset (e.g., symbol/granularity change).
+  bool _shouldSkipBoundsAnimation = true;
+
   /// Calculated quotes for showing the the grid line.
   List<double>? gridLineQuotes;
 
@@ -166,6 +170,18 @@ class BasicChartState<T extends BasicChart> extends State<T>
   void didUpdateChartData(BasicChart oldChart) {
     if (widget.mainSeries.id == oldChart.mainSeries.id) {
       widget.mainSeries.didUpdate(oldChart.mainSeries);
+    }
+
+    // Detect if data is completely reset (e.g., symbol or granularity change)
+    // Skip animation if:
+    // 1. First load: old epochs are null
+    // 2. Data completely reset: both min and max epochs changed
+    final int? oldMinEpoch = oldChart.mainSeries.getMinEpoch();
+    if (oldMinEpoch == null ||
+        (oldMinEpoch != widget.mainSeries.getMinEpoch() &&
+            oldChart.mainSeries.getMaxEpoch() !=
+                widget.mainSeries.getMaxEpoch())) { 
+      _shouldSkipBoundsAnimation = true;
     }
 
     if (widget.currentTickAnimationDuration.inMilliseconds !=
@@ -312,17 +328,32 @@ class BasicChartState<T extends BasicChart> extends State<T>
 
     if (!minQuote.isNaN && minQuote != bottomBoundQuoteTarget) {
       bottomBoundQuoteTarget = minQuote;
-      bottomBoundQuoteAnimationController.animateTo(
-        bottomBoundQuoteTarget,
-        curve: Curves.easeOut,
-      );
+      if (_shouldSkipBoundsAnimation) {
+        // First load or data reset: set value directly without animation
+        bottomBoundQuoteAnimationController.value = bottomBoundQuoteTarget;
+      } else {
+        bottomBoundQuoteAnimationController.animateTo(
+          bottomBoundQuoteTarget,
+          curve: Curves.easeOut,
+        );
+      }
     }
     if (!maxQuote.isNaN && maxQuote != topBoundQuoteTarget) {
       topBoundQuoteTarget = maxQuote;
-      topBoundQuoteAnimationController.animateTo(
-        topBoundQuoteTarget,
-        curve: Curves.easeOut,
-      );
+      if (_shouldSkipBoundsAnimation) {
+        // First load or data reset: set value directly without animation
+        topBoundQuoteAnimationController.value = topBoundQuoteTarget;
+      } else {
+        topBoundQuoteAnimationController.animateTo(
+          topBoundQuoteTarget,
+          curve: Curves.easeOut,
+        );
+      }
+    }
+
+    // Mark animation skip as complete after setting valid bounds
+    if (_shouldSkipBoundsAnimation && !minQuote.isNaN && !maxQuote.isNaN) {
+      _shouldSkipBoundsAnimation = false;
     }
   }
 
