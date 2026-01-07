@@ -1,3 +1,4 @@
+import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/annotations/barriers/vertical_barrier/vertical_barrier_label_painter.dart';
 import 'package:deriv_chart/src/theme/painting_styles/chart_painting_style.dart';
 import 'package:flutter/material.dart';
 
@@ -160,6 +161,7 @@ class VerticalBarrierStyle extends BarrierStyle {
     Color titleBackgroundColor = Colors.transparent,
     bool isDashed = true,
     this.labelPosition = VerticalBarrierLabelPosition.auto,
+    this.customLabelPainter,
     TextStyle textStyle = const TextStyle(
       fontSize: 10,
       height: 1.3,
@@ -176,6 +178,25 @@ class VerticalBarrierStyle extends BarrierStyle {
 
   /// Label position.
   final VerticalBarrierLabelPosition labelPosition;
+
+  /// Custom label painter for complex label layouts.
+  ///
+  /// When provided, this painter will be used instead of the default
+  /// single-line text label. This allows for multi-line labels with
+  /// different styles and spacing.
+  ///
+  /// Example:
+  /// ```dart
+  /// VerticalBarrierStyle(
+  ///   customLabelPainter: MultiLineLabelPainter(
+  ///     lines: [
+  ///       LabelLine(text: 'Title', style: TextStyle(color: Colors.white)),
+  ///       LabelLine(text: 'Value', style: TextStyle(color: Colors.orange), topSpacing: 4),
+  ///     ],
+  ///   ),
+  /// )
+  /// ```
+  final VerticalBarrierLabelPainter? customLabelPainter;
 }
 
 /// The type of arrow on top/bottom of barrier label (Horizontal barrier).
@@ -201,12 +222,18 @@ enum LabelShape {
 
 /// Vertical barrier label position.
 enum VerticalBarrierLabelPosition {
-  /// Right if there is no space on left, otherwise left.
+  /// Right if there is no space on left, otherwise left. (bottom aligned)
   auto,
 
-  /// Always right.
-  right,
+  /// Always right top.
+  rightTop,
 
-  /// Always left.
-  left,
+  /// Always right bottom.
+  rightBottom,
+
+  /// Always left top.
+  leftTop,
+
+  /// Always left bottom.
+  leftBottom,
 }

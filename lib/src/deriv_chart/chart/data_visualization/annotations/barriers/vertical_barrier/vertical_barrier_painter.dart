@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import '../../../chart_data.dart';
 import 'vertical_barrier.dart';
+import 'vertical_barrier_label_painter.dart';
 
 /// A class for painting horizontal barriers.
 class VerticalBarrierPainter extends SeriesPainter<VerticalBarrier> {
@@ -71,45 +72,106 @@ class VerticalBarrierPainter extends SeriesPainter<VerticalBarrier> {
             Offset(lineX, lineStartY), Offset(lineX, lineEndY), paint);
       }
 
-      _paintLineLabel(canvas, lineX, lineEndY, style);
+      _paintLineLabel(canvas, lineX, lineStartY, lineEndY, style);
     }
   }
 
   void _paintLineLabel(
     Canvas canvas,
     double lineX,
+    double lineStartY,
     double lineEndY,
     VerticalBarrierStyle style,
   ) {
+    // Use custom label painter if provided
+    if (style.customLabelPainter != null) {
+      _paintCustomLabel(canvas, lineX, lineStartY, lineEndY,
+          style.customLabelPainter!, style.labelPosition);
+      return;
+    }
+
+    // Default single-line label painting
     final TextPainter titlePainter = TextPainter(
       text: TextSpan(
         text: series.title,
-        style: style.textStyle.copyWith(color: style.color),
+        style: style.textStyle,
       ),
       textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
     )..layout();
 
-    late double titleStartX;
+    final Offset position = _calculateLabelPosition(
+      lineX: lineX,
+      lineStartY: lineStartY,
+      lineEndY: lineEndY,
+      labelWidth: titlePainter.width,
+      labelHeight: titlePainter.height,
+      labelPosition: style.labelPosition,
+    );
 
-    switch (style.labelPosition) {
+    titlePainter.paint(canvas, position);
+  }
+
+  void _paintCustomLabel(
+    Canvas canvas,
+    double lineX,
+    double lineStartY,
+    double lineEndY,
+    VerticalBarrierLabelPainter labelPainter,
+    VerticalBarrierLabelPosition labelPosition,
+  ) {
+    final Size labelSize = labelPainter.size;
+
+    final Offset position = _calculateLabelPosition(
+      lineX: lineX,
+      lineStartY: lineStartY,
+      lineEndY: lineEndY,
+      labelWidth: labelSize.width,
+      labelHeight: labelSize.height,
+      labelPosition: labelPosition,
+    );
+
+    labelPainter.paint(canvas, position);
+  }
+
+  Offset _calculateLabelPosition({
+    required double lineX,
+    required double lineStartY,
+    required double lineEndY,
+    required double labelWidth,
+    required double labelHeight,
+    required VerticalBarrierLabelPosition labelPosition,
+  }) {
+    late double labelStartX;
+    late double labelStartY;
+
+    switch (labelPosition) {
       case VerticalBarrierLabelPosition.auto:
-        titleStartX = lineX - titlePainter.width - 5;
-        if (titleStartX < 0) {
-          titleStartX = lineX + 5;
+        // Right if there is no space on left, otherwise left. (bottom aligned)
+        labelStartX = lineX - labelWidth - 5;
+        if (labelStartX < 0) {
+          labelStartX = lineX + 5;
         }
+        labelStartY = lineEndY - labelHeight;
         break;
-      case VerticalBarrierLabelPosition.right:
-        titleStartX = lineX + 5;
+      case VerticalBarrierLabelPosition.rightTop:
+        labelStartX = lineX + 5;
+        labelStartY = lineStartY;
         break;
-      case VerticalBarrierLabelPosition.left:
-        titleStartX = lineX - titlePainter.width - 5;
+      case VerticalBarrierLabelPosition.rightBottom:
+        labelStartX = lineX + 5;
+        labelStartY = lineEndY - labelHeight;
+        break;
+      case VerticalBarrierLabelPosition.leftTop:
+        labelStartX = lineX - labelWidth - 5;
+        labelStartY = lineStartY;
+        break;
+      case VerticalBarrierLabelPosition.leftBottom:
+        labelStartX = lineX - labelWidth - 5;
+        labelStartY = lineEndY - labelHeight;
         break;
     }
 
-    titlePainter.paint(
-      canvas,
-      Offset(titleStartX, lineEndY - titlePainter.height),
-    );
+    return Offset(labelStartX, labelStartY);
   }
 }

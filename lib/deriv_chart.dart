@@ -55,6 +55,9 @@ export 'src/deriv_chart/chart/data_visualization/annotations/barriers/horizontal
 export 'src/deriv_chart/chart/data_visualization/annotations/barriers/horizontal_barrier/horizontal_barrier_painter.dart';
 export 'src/deriv_chart/chart/data_visualization/annotations/barriers/horizontal_barrier/tick_indicator.dart';
 export 'src/deriv_chart/chart/data_visualization/annotations/barriers/vertical_barrier/vertical_barrier.dart';
+export 'src/deriv_chart/chart/data_visualization/annotations/barriers/vertical_barrier/vertical_barrier_label_painter.dart';
+export 'src/deriv_chart/chart/data_visualization/annotations/barriers/vertical_barrier/label_line.dart';
+export 'src/deriv_chart/chart/data_visualization/annotations/barriers/vertical_barrier/multi_line_label_painter.dart';
 export 'src/deriv_chart/chart/data_visualization/annotations/chart_annotation.dart';
 export 'src/deriv_chart/chart/data_visualization/chart_data.dart';
 export 'src/deriv_chart/chart/data_visualization/chart_series/data_series.dart';
