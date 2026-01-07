@@ -327,26 +327,27 @@ class XAxisModel extends ChangeNotifier {
     // modified in place.
     _entries = entries.sublist(0);
 
-    // Update epoch bounds based on new entries before clamping
+    // Update _minEpoch based on entries.
+    // Note: We don't update _maxEpoch here because it needs to consider
+    // annotations (e.g. barriers) that may be beyond the last tick.
+    // _maxEpoch is properly set in update() method after _updateEntries.
     if (entries.isNotEmpty) {
       _minEpoch = entries.first.epoch;
-      _maxEpoch = entries.last.epoch;
     }
 
     // On first load, set rightBoundEpoch to the correct initial position.
     // This is needed because the initial _rightBoundEpoch was calculated based
     // on _nowEpoch (before data was loaded), not the actual data's epoch range.
     if (firstLoad && entries.isNotEmpty) {
+      // Use entries.last.epoch for initial position since _maxEpoch
+      // will be set properly in update() method.
       final double offsetToUse =
           _initialCurrentTickOffset ?? _maxCurrentTickOffset;
-      _rightBoundEpoch = _shiftEpoch(_maxEpoch, offsetToUse);
+      _rightBoundEpoch = _shiftEpoch(entries.last.epoch, offsetToUse);
     }
 
-    // After switching between closed and open symbols, since their epoch range
-    // might be without any overlap, scroll position on the new symbol might be
-    // completely off where there is no data hence the chart will show just a
-    // loading animation. Here we make sure that it's on-range.
-    _clampRightBoundEpoch();
+    // Note: _clampRightBoundEpoch() is called at the end of update() method
+    // after _maxEpoch is properly set to include annotations.
   }
 
   /// Resets scale and pan on granularity change.
@@ -638,10 +639,28 @@ class XAxisModel extends ChangeNotifier {
     _updateEntries(entries);
 
     _minEpoch = minEpoch ?? _minEpoch;
-    _maxEpoch = maxEpoch ?? _maxEpoch;
+
+    // Update _maxEpoch considering both entries and annotations (like barriers).
+    // maxEpoch parameter includes annotations, but we also need to ensure
+    // _maxEpoch is at least entries.last.epoch for new ticks.
+    final int entriesMaxEpoch =
+        (entries?.isNotEmpty ?? false) ? entries!.last.epoch : _maxEpoch;
+    if (maxEpoch != null) {
+      // Take the maximum of entries' last epoch and provided maxEpoch
+      // to ensure both new ticks and distant barriers are accessible.
+      _maxEpoch = maxEpoch > entriesMaxEpoch ? maxEpoch : entriesMaxEpoch;
+    } else {
+      // If no maxEpoch provided, use entries' last epoch
+      _maxEpoch = entriesMaxEpoch;
+    }
+
     _dataFitPadding = dataFitPadding ?? _dataFitPadding;
     _maxCurrentTickOffset = maxCurrentTickOffset ?? _maxCurrentTickOffset;
     _snapMarkersToIntervals = snapMarkersToIntervals ?? _snapMarkersToIntervals;
+
+    // Re-clamp after updating epoch bounds to ensure barriers/annotations
+    // outside the main data range are accessible by scrolling.
+    _clampRightBoundEpoch();
   }
 
   /// Returns a list of timestamps in the grid without any overlaps.

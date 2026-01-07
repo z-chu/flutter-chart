@@ -140,6 +140,8 @@ class XAxisState extends State<XAxisBase> with TickerProviderStateMixin {
       isLive: widget.isLive,
       granularity: context.read<ChartConfig>().granularity,
       entries: widget.entries,
+      minEpoch: widget.minEpoch,
+      maxEpoch: widget.maxEpoch,
       dataFitPadding: widget.dataFitPadding,
       maxCurrentTickOffset:
           context.read<ChartConfig>().chartAxisConfig.maxCurrentTickOffset,
