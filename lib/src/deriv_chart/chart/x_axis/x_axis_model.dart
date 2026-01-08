@@ -206,6 +206,7 @@ class XAxisModel extends ChangeNotifier {
       _currentTickFarEnoughFromLeftBound;
 
   bool get _currentTickFarEnoughFromLeftBound =>
+      _entries == null ||
       _entries!.isEmpty ||
       _entries!.last.epoch > _shiftEpoch(leftBoundEpoch, autoPanOffset);
 
@@ -489,6 +490,14 @@ class XAxisModel extends ChangeNotifier {
   /// Called at the start of scale and pan gestures.
   void onScaleAndPanStart(ScaleStartDetails details) {
     _scrollAnimationController.stop();
+
+    // Clean up any fit animation listener to prevent it from
+    // interfering with user gestures
+    if (_currentFitAnimationListener != null) {
+      _scrollAnimationController.removeListener(_currentFitAnimationListener!);
+      _currentFitAnimationListener = null;
+    }
+
     _prevMsPerPx = _msPerPx;
 
     // Exit data fit mode.
@@ -621,6 +630,163 @@ class XAxisModel extends ChangeNotifier {
       _rightBoundEpoch =
           _rightBoundEpoch.clamp(_minRightBoundEpoch, _maxRightBoundEpoch);
     }
+  }
+
+  // Listener for fit animation cleanup
+  VoidCallback? _currentFitAnimationListener;
+
+  /// Tries to make the given [targetEpoch] visible with proper offset.
+  ///
+  /// Logic:
+  /// - availableSpace = maxCurrentTickOffset - initialCurrentTickOffset
+  /// - actualGap = (barrier - lastTick) in pixels
+  /// - If actualGap <= 0: barrier is before or at lastTick, do nothing
+  /// - If actualGap <= availableSpace: just scroll
+  /// - If actualGap > availableSpace: need to zoom
+  ///
+  /// If [animate] is true, the transition will be animated.
+  ///
+  /// Returns `true` if the target is now visible, `false` otherwise.
+  bool fitToIncludeEpoch(int targetEpoch, {bool animate = true}) {
+    if (width == null || _entries == null || _entries!.isEmpty) {
+      return false;
+    }
+
+    final int lastTickEpoch = _entries!.last.epoch;
+
+    // The ideal offset for barrier from canvas right edge.
+    // Both maxCurrentTickOffset and initialCurrentTickOffset are measured
+    // from the canvas right edge (confirmed A1 scheme).
+    final double idealBarrierOffset =
+        _initialCurrentTickOffset ?? _maxCurrentTickOffset;
+
+    // Available space between lastTick and barrier (in pixels)
+    // lastTick is at maxCurrentTickOffset from canvas right edge
+    // barrier should be at idealBarrierOffset from canvas right edge
+    // So the max distance between them is: maxCurrentTickOffset - idealBarrierOffset
+    final double availableSpace = _maxCurrentTickOffset - idealBarrierOffset;
+
+    // Actual gap between barrier and lastTick (in ms)
+    final int gapMs = targetEpoch - lastTickEpoch;
+
+    // Convert gap to pixels using current msPerPx
+    final double gapPx = gapMs / _msPerPx;
+
+    // Case 1: Barrier is before or at lastTick, do nothing
+    if (gapPx <= 0) {
+      return true;
+    }
+
+    // Calculate target values
+    double targetMsPerPx = _msPerPx;
+    int targetRightBoundEpoch;
+
+    // Case 2: Gap fits within available space, just scroll
+    if (gapPx <= availableSpace) {
+      targetRightBoundEpoch = _shiftEpoch(targetEpoch, idealBarrierOffset);
+    } else {
+      // Case 3: Gap exceeds available space, need to zoom out
+      if (availableSpace > 0) {
+        final double requiredMsPerPx = gapMs / availableSpace;
+        targetMsPerPx = requiredMsPerPx.clamp(_minMsPerPx, _maxMsPerPx);
+      } else {
+        targetMsPerPx = _maxMsPerPx;
+      }
+      // Calculate target right bound with new msPerPx
+      targetRightBoundEpoch = _shiftEpochWithMsPerPx(
+        targetEpoch,
+        idealBarrierOffset,
+        targetMsPerPx,
+      );
+    }
+
+    // Clamp target right bound
+    targetRightBoundEpoch =
+        targetRightBoundEpoch.clamp(_minRightBoundEpoch, _maxRightBoundEpoch);
+
+    if (!animate) {
+      // Apply immediately without animation
+      _msPerPx = targetMsPerPx;
+      _rightBoundEpoch = targetRightBoundEpoch;
+      notifyListeners();
+      return targetEpoch >= leftBoundEpoch && targetEpoch <= rightBoundEpoch;
+    }
+
+    // Animate the transition
+    _animateFitToEpoch(
+      targetMsPerPx: targetMsPerPx,
+      targetRightBoundEpoch: targetRightBoundEpoch,
+    );
+
+    return true;
+  }
+
+  /// Helper method to shift epoch with a specific msPerPx value.
+  int _shiftEpochWithMsPerPx(int epoch, double pxShift, double msPerPx) {
+    return shiftEpochByPx(
+      epoch: epoch,
+      pxShift: pxShift,
+      msPerPx: msPerPx,
+      gaps: _gapManager.gaps,
+    );
+  }
+
+  /// Animates the transition to target msPerPx and rightBoundEpoch.
+  void _animateFitToEpoch({
+    required double targetMsPerPx,
+    required int targetRightBoundEpoch,
+  }) {
+    // Stop any existing scroll animation
+    _scrollAnimationController.stop();
+
+    // Remove previous fit animation listener if exists
+    if (_currentFitAnimationListener != null) {
+      _scrollAnimationController.removeListener(_currentFitAnimationListener!);
+      _currentFitAnimationListener = null;
+    }
+
+    // Store starting values
+    final double startMsPerPx = _msPerPx;
+    final int startRightBoundEpoch = _rightBoundEpoch;
+
+    // Reset animation controller
+    _prevScrollAnimationValue = 0;
+    _scrollAnimationController.value = 0;
+
+    // Create a listener that interpolates both values
+    void animationListener() {
+      final double t = Curves.easeOutCubic.transform(
+        (_scrollAnimationController.value / 1.0).clamp(0.0, 1.0),
+      );
+
+      // Interpolate msPerPx
+      _msPerPx = startMsPerPx + (targetMsPerPx - startMsPerPx) * t;
+
+      // Interpolate rightBoundEpoch
+      _rightBoundEpoch = (startRightBoundEpoch +
+              (targetRightBoundEpoch - startRightBoundEpoch) * t)
+          .round();
+
+      _prevScrollAnimationValue = _scrollAnimationController.value;
+      notifyListeners();
+    }
+
+    _scrollAnimationController.addListener(animationListener);
+    _currentFitAnimationListener = animationListener;
+
+    _scrollAnimationController
+        .animateTo(
+      1,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.linear, // We apply easeOutCubic in the listener
+    )
+        .then((_) {
+      // Clean up listener after animation completes
+      if (_currentFitAnimationListener == animationListener) {
+        _scrollAnimationController.removeListener(animationListener);
+        _currentFitAnimationListener = null;
+      }
+    });
   }
 
   /// Updates the [XAxisModel] model variables.

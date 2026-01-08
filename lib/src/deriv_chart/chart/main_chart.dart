@@ -24,6 +24,7 @@ import '../interactive_layer/interactive_layer_behaviours/interactive_layer_desk
 import 'basic_chart.dart';
 import 'multiple_animated_builder.dart';
 import 'data_visualization/annotations/chart_annotation.dart';
+import 'data_visualization/annotations/barriers/vertical_barrier/vertical_barrier.dart';
 import 'data_visualization/chart_data.dart';
 import 'data_visualization/chart_series/data_series.dart';
 import 'data_visualization/chart_series/series.dart';
@@ -213,6 +214,29 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
 
     _setupController();
     _setupCrosshairController();
+
+    // Handle initial VerticalBarrier visibility
+    _fitToInitialVerticalBarriers();
+  }
+
+  /// Fits the chart to include any initial VerticalBarriers with fitIfPossible.
+  void _fitToInitialVerticalBarriers() {
+    if (widget.annotations == null) {
+      return;
+    }
+
+    for (final ChartAnnotation<ChartObject> annotation in widget.annotations!) {
+      if (annotation is VerticalBarrier &&
+          annotation.visibility == VerticalBarrierVisibility.fitIfPossible &&
+          annotation.epoch != null) {
+        final int barrierEpoch = annotation.epoch!;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            xAxis.fitToIncludeEpoch(barrierEpoch);
+          }
+        });
+      }
+    }
   }
 
   @override
@@ -238,9 +262,48 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
       maxEpoch: widget.chartDataList.getMaxEpoch(),
     );
 
+    // Handle VerticalBarrier visibility - fit to include barriers with
+    // fitIfPossible visibility that are newly added.
+    _handleVerticalBarrierVisibility(oldChart);
+
     crosshairController
       ..series = widget.mainSeries as DataSeries<Tick>
       ..crosshairVariant = widget.crosshairVariant;
+  }
+
+  /// Handles VerticalBarrier visibility by zooming out to include barriers
+  /// with [VerticalBarrierVisibility.fitIfPossible] that are newly added.
+  void _handleVerticalBarrierVisibility(MainChart oldChart) {
+    if (widget.annotations == null) {
+      return;
+    }
+
+    // Get old barrier IDs for comparison
+    final Set<String> oldBarrierIds = oldChart.annotations
+            ?.whereType<VerticalBarrier>()
+            .map((VerticalBarrier b) => b.id)
+            .toSet() ??
+        <String>{};
+
+    // Find newly added barriers with fitIfPossible visibility
+    for (final ChartAnnotation<ChartObject> annotation in widget.annotations!) {
+      if (annotation is VerticalBarrier &&
+          annotation.visibility == VerticalBarrierVisibility.fitIfPossible &&
+          annotation.epoch != null) {
+        // Check if this is a newly added barrier
+        final bool isNewBarrier = !oldBarrierIds.contains(annotation.id);
+
+        if (isNewBarrier) {
+          // Use addPostFrameCallback to avoid calling notifyListeners during build
+          final int barrierEpoch = annotation.epoch!;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              xAxis.fitToIncludeEpoch(barrierEpoch);
+            }
+          });
+        }
+      }
+    }
   }
 
   void _setupCrosshairController() {
