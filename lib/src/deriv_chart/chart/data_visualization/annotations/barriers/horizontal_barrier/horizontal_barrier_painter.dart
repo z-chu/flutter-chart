@@ -23,9 +23,6 @@ class HorizontalBarrierPainter<T extends HorizontalBarrier>
 
   late Paint _paint;
 
-  /// Right margin.
-  static const double rightMargin = 4;
-
   /// Distance between title area and label area.
   static const double _distanceBetweenTitleAndLabel = 16;
 
@@ -124,7 +121,7 @@ class HorizontalBarrierPainter<T extends HorizontalBarrier>
     final Rect labelArea = Rect.fromCenter(
       center: Offset(
           size.width -
-              rightMargin -
+              style.rightMargin -
               style.labelPadding -
               valuePainter.width / 2,
           y),
