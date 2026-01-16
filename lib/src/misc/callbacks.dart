@@ -1,5 +1,6 @@
 import 'package:deriv_chart/src/add_ons/add_on_config.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_data.dart';
+import 'package:deriv_chart/src/models/tick.dart';
 import 'package:flutter/gestures.dart';
 
 /// Called when chart is scrolled or zoomed.
@@ -50,3 +51,13 @@ typedef OnCrosshairHoverCallback = void Function(
   QuoteFromY quoteFromY,
   AddOnConfig? config,
 );
+
+/// Called when the selected tick/candle changes during crosshair interaction.
+///
+/// [tick] is the currently selected tick/candle data point.
+typedef OnCrosshairTickChangedCallback = void Function(Tick? tick);
+
+/// Called when the selected tick/candle epoch changes during crosshair interaction.
+///
+/// [epoch] is the currently selected tick/candle epoch.
+typedef OnCrosshairTickEpochChangedCallback = void Function(int? epoch);

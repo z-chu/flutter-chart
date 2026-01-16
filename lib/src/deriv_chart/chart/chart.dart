@@ -57,6 +57,8 @@ class Chart extends StatefulWidget {
     this.onCrosshairAppeared,
     this.onCrosshairDisappeared,
     this.onCrosshairHover,
+    this.onCrosshairTickChanged,
+    this.onCrosshairTickEpochChanged,
     this.onVisibleAreaChanged,
     this.onQuoteAreaChanged,
     this.isLive = false,
@@ -122,6 +124,12 @@ class Chart extends StatefulWidget {
 
   /// Called when the crosshair cursor is hovered/moved.
   final OnCrosshairHoverCallback? onCrosshairHover;
+
+  /// Called when the selected tick/candle changes during crosshair interaction.
+  final OnCrosshairTickChangedCallback? onCrosshairTickChanged;
+
+  /// Called when the selected tick/candle epoch changes during crosshair interaction.
+  final OnCrosshairTickEpochChangedCallback? onCrosshairTickEpochChanged;
 
   /// Called when chart is scrolled or zoomed.
   final VisibleAreaChangedCallback? onVisibleAreaChanged;

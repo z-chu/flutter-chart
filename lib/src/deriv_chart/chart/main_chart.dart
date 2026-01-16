@@ -57,6 +57,8 @@ class MainChart extends BasicChart {
     this.onCrosshairAppeared,
     this.onCrosshairDisappeared,
     this.onCrosshairHover,
+    this.onCrosshairTickChanged,
+    this.onCrosshairTickEpochChanged,
     this.overlaySeries,
     this.annotations,
     this.verticalPaddingFraction,
@@ -110,6 +112,12 @@ class MainChart extends BasicChart {
 
   /// Called when the crosshair cursor is hovered/moved.
   final OnCrosshairHover? onCrosshairHover;
+
+  /// Called when the selected tick/candle changes during crosshair interaction.
+  final OnCrosshairTickChangedCallback? onCrosshairTickChanged;
+
+  /// Called when the selected tick/candle epoch changes during crosshair interaction.
+  final OnCrosshairTickEpochChangedCallback? onCrosshairTickEpochChanged;
 
   /// Chart's widget controller.
   final ChartController? controller;
@@ -322,6 +330,21 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
         }
         widget.onCrosshairDisappeared?.call();
       },
+      onCrosshairHover: widget.onCrosshairHover != null
+          ? () {
+              final CrosshairState state = crosshairController.value;
+              widget.onCrosshairHover?.call(
+                state.cursorPosition,
+                state.cursorPosition,
+                xAxis.xFromEpoch,
+                chartQuoteToCanvasY,
+                xAxis.epochFromX,
+                chartQuoteFromCanvasY,
+              );
+            }
+          : null,
+      onCrosshairTickChanged: widget.onCrosshairTickChanged,
+      onCrosshairTickEpochChanged: widget.onCrosshairTickEpochChanged,
       showCrosshair: widget.showCrosshair,
       quoteFromCanvasY: chartQuoteFromCanvasY,
       crosshairVariant: widget.crosshairVariant,

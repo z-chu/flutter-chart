@@ -2,6 +2,7 @@ import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshai
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/find.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_series/data_series.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/x_axis/x_axis_model.dart';
+import 'package:deriv_chart/src/misc/callbacks.dart';
 import 'package:deriv_chart/src/models/tick.dart';
 import 'package:deriv_chart/src/models/candle.dart';
 import 'package:flutter/gestures.dart';
@@ -82,6 +83,9 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
     required this.crosshairVariant,
     this.onCrosshairAppeared,
     this.onCrosshairDisappeared,
+    this.onCrosshairHover,
+    this.onCrosshairTickChanged,
+    this.onCrosshairTickEpochChanged,
     this.isCrosshairActive = false,
     this.quoteFromCanvasY,
   }) : super(CrosshairState());
@@ -103,6 +107,15 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
 
   /// Callback invoked when the crosshair is hidden.
   final VoidCallback? onCrosshairDisappeared;
+
+  /// Callback invoked when the crosshair cursor is moved/hovered.
+  final VoidCallback? onCrosshairHover;
+
+  /// Callback invoked when the selected tick/candle changes.
+  final OnCrosshairTickChangedCallback? onCrosshairTickChanged;
+
+  /// Callback invoked when the selected tick/candle epoch changes.
+  final OnCrosshairTickEpochChangedCallback? onCrosshairTickEpochChanged;
 
   /// Indicates whether the crosshair is currently in an active interaction state.
   bool isCrosshairActive;
@@ -135,6 +148,9 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
       pixelsPerSecond: Offset.zero,
       duration: Duration.zero,
       offset: Offset.zero);
+
+  /// Tracks the last tick for which callbacks were emitted to prevent duplicates.
+  Tick? _lastEmittedTick;
 
   /// Calculates the appropriate animation duration based on current drag velocity.
   ///
@@ -176,8 +192,6 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
 
   /// Handles the start of a long press gesture to activate the crosshair.
   void onLongPressStart(LongPressStartDetails details) {
-    onCrosshairAppeared?.call();
-
     xAxisModel.disableAutoPan();
 
     _lastLongPressPosition = details.localPosition.dx;
@@ -190,6 +204,8 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
 
     if (tick != null) {
       _showCrosshair(tick, details.localPosition);
+    } else {
+      _tryEmitTickChanged(null);
     }
   }
 
@@ -224,7 +240,6 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
       );
     }
 
-    onCrosshairDisappeared?.call();
     xAxisModel
       ..pan(0)
       ..enableAutoPan();
@@ -244,9 +259,10 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
 
     if (tick != null) {
       _showCrosshair(tick, event.localPosition);
+      onCrosshairHover?.call();
+    } else {
+      _tryEmitTickChanged(null);
     }
-
-    notifyListeners();
   }
 
   /// Handles mouse exit events to hide crosshair when cursor leaves the chart.
@@ -266,6 +282,7 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
 
     isCrosshairActive = false;
     notifyListeners();
+    _tryEmitTickChanged(null);
   }
 
   /// Shows the crosshair with the specified tick data and cursor position.
@@ -282,7 +299,6 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
       crosshairTick.epoch,
       series.visibleEntries.entries,
     );
-
     value = value.copyWith(
       crosshairTick: crosshairTick,
       cursorPosition: position,
@@ -299,15 +315,19 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
   }
 
   /// Gets the closest tick based on the current position with position clamping and epoch tracking.
+  ///
+  /// This method also triggers [onCrosshairTickChanged] callback when the snapped tick changes,
+  /// enabling external components (e.g., haptic feedback) to respond to tick changes.
   Tick? updateAndFindClosestTick([double? cursorX]) {
-    final double? _targetPosition = cursorX ?? _lastLongPressPosition;
-    if (_targetPosition == null) {
+    final double? targetPosition = cursorX ?? _lastLongPressPosition;
+    if (targetPosition == null) {
+      _tryEmitTickChanged(null);
       return null;
     }
 
     // Clamp the position to stay within close distance boundaries
     // This prevents the crosshair from getting too close to the chart edges
-    final double clampedPosition = _targetPosition.clamp(
+    final double clampedPosition = targetPosition.clamp(
         _closeDistance, xAxisModel.width! - _closeDistance);
 
     // Convert the clamped position to epoch time
@@ -320,7 +340,54 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
     }
 
     // Find and return the closest tick for the current epoch
-    return _findTickForCrosshair(epoch: _lastLongPressPositionEpoch);
+    final Tick? newTick =
+        _findTickForCrosshair(epoch: _lastLongPressPositionEpoch);
+
+    // Trigger callback if the snapped tick has changed and is within data range
+    _tryEmitTickChanged(newTick);
+
+    return newTick;
+  }
+
+  /// Attempts to emit tick changed callback if conditions are met.
+  void _tryEmitTickChanged(Tick? newTick) {
+    if (onCrosshairTickChanged == null && onCrosshairTickEpochChanged == null) {
+      return;
+    }
+    if (newTick == null) {
+      if (_lastEmittedTick == null) {
+        return;
+      }
+      _lastEmittedTick = null;
+      onCrosshairTickChanged?.call(null);
+      onCrosshairTickEpochChanged?.call(null);
+      return;
+    }
+
+    final bool isWithinRange = _isCursorWithinDataRange(
+      newTick.epoch,
+      series.visibleEntries.entries,
+    );
+    if (!isWithinRange) {
+      if (_lastEmittedTick == null) {
+        return;
+      }
+      _lastEmittedTick = null;
+      onCrosshairTickChanged?.call(null);
+      onCrosshairTickEpochChanged?.call(null);
+      return;
+    }
+
+    final Tick? previousTick = _lastEmittedTick;
+    _lastEmittedTick = newTick;
+    if (onCrosshairTickChanged != null && newTick != previousTick) {
+      onCrosshairTickChanged!.call(newTick);
+    }
+
+    if (onCrosshairTickEpochChanged != null &&
+        newTick.epoch != previousTick?.epoch) {
+      onCrosshairTickEpochChanged!.call(newTick.epoch);
+    }
   }
 
   /// Finds the appropriate tick for crosshair display based on cursor position.

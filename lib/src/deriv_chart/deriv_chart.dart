@@ -42,6 +42,8 @@ class DerivChart extends StatefulWidget {
     this.onCrosshairAppeared,
     this.onCrosshairDisappeared,
     this.onCrosshairHover,
+    this.onCrosshairTickChanged,
+    this.onCrosshairTickEpochChanged,
     this.onVisibleAreaChanged,
     this.onQuoteAreaChanged,
     this.theme,
@@ -109,6 +111,12 @@ class DerivChart extends StatefulWidget {
 
   /// Called when the crosshair cursor is hovered/moved.
   final OnCrosshairHoverCallback? onCrosshairHover;
+
+  /// Called when the selected tick/candle changes during crosshair interaction.
+  final OnCrosshairTickChangedCallback? onCrosshairTickChanged;
+
+  /// Called when the selected tick/candle epoch changes during crosshair interaction.
+  final OnCrosshairTickEpochChangedCallback? onCrosshairTickEpochChanged;
 
   /// Called when chart is scrolled or zoomed.
   final VisibleAreaChangedCallback? onVisibleAreaChanged;
@@ -396,6 +404,8 @@ class _DerivChartState extends State<DerivChart> {
                 onCrosshairAppeared: widget.onCrosshairAppeared,
                 onCrosshairDisappeared: widget.onCrosshairDisappeared,
                 onCrosshairHover: widget.onCrosshairHover,
+                onCrosshairTickChanged: widget.onCrosshairTickChanged,
+                onCrosshairTickEpochChanged: widget.onCrosshairTickEpochChanged,
                 onVisibleAreaChanged: widget.onVisibleAreaChanged,
                 onQuoteAreaChanged: widget.onQuoteAreaChanged,
                 isLive: widget.isLive,

@@ -43,6 +43,8 @@ class _ChartStateWeb extends _ChartState {
             showCrosshair: widget.showCrosshair,
             onCrosshairDisappeared: widget.onCrosshairDisappeared,
             onCrosshairHover: _onCrosshairHover,
+            onCrosshairTickChanged: widget.onCrosshairTickChanged,
+            onCrosshairTickEpochChanged: widget.onCrosshairTickEpochChanged,
             loadingAnimationColor: widget.loadingAnimationColor,
             currentTickAnimationDuration: currentTickAnimationDuration,
             quoteBoundsAnimationDuration: quoteBoundsAnimationDuration,
