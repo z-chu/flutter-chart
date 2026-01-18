@@ -107,6 +107,11 @@ class _MarkerAreaState extends State<MarkerArea> {
         return;
       }
     }
+
+    // No marker was tapped, call onTapOutside if available
+    if (series is MarkerGroupSeries) {
+      series.onTapOutside?.call();
+    }
   }
 
   @override

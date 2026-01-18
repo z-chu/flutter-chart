@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_series/series_painter.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/markers/chart_marker.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/markers/marker.dart';
@@ -24,11 +25,13 @@ class MarkerGroupSeries extends MarkerSeries {
   /// @param entries A SplayTreeSet of Marker objects that this series will manage
   /// @param markerGroupIconPainter The painter responsible for rendering marker group icons
   /// @param markerGroupList An optional list of MarkerGroup objects to be displayed
+  /// @param onTapOutside Callback when user taps outside of any marker
   MarkerGroupSeries(
     SplayTreeSet<Marker> entries, {
     required this.markerGroupIconPainter,
     this.markerGroupList,
     this.activeMarkerGroup,
+    this.onTapOutside,
     ActiveMarker? activeMarker,
   }) : super(
           entries,
@@ -50,6 +53,10 @@ class MarkerGroupSeries extends MarkerSeries {
 
   /// Active marker group that is currently selected on the chart.
   final ActiveMarkerGroup? activeMarkerGroup;
+
+  /// Callback when user taps outside of any marker.
+  /// This can be used to clear active marker state.
+  final VoidCallback? onTapOutside;
 
   /// List of marker groups that are currently visible in the chart viewport.
   ///
