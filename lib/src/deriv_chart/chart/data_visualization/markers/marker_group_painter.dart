@@ -78,11 +78,49 @@ class MarkerGroupPainter extends SeriesPainter<MarkerGroupSeries> {
     final String? activeGroupId =
         (series as MarkerGroupSeries?)?.activeMarkerGroup?.id;
 
+    // Notify painter that a new frame is starting (to reset per-frame state)
+    markerGroupIconPainter.onFrameStart();
+
+    // Phase 1: Prepare all marker groups (calculate positions, handle overlaps, etc.)
+    // This ensures position calculations have complete information regardless of zIndex order.
     for (final MarkerGroup markerGroup in series.visibleMarkerGroupList) {
       if (activeGroupId != null && markerGroup.id == activeGroupId) {
         continue;
       }
+      markerGroupIconPainter.prepareMarkerGroup(
+        markerGroup,
+        size,
+        epochToX,
+        quoteToY,
+        props,
+      );
+    }
+
+    // Phase 2: Sort by zIndex and paint (higher zIndex drawn last/on top)
+    final List<MarkerGroup> sortedList = [...series.visibleMarkerGroupList]
+      ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+
+    for (final MarkerGroup markerGroup in sortedList) {
+      if (activeGroupId != null && markerGroup.id == activeGroupId) {
+        continue;
+      }
       markerGroupIconPainter.paintMarkerGroup(
+        canvas,
+        size,
+        theme,
+        markerGroup,
+        epochToX,
+        quoteToY,
+        props,
+        animationInfo,
+      );
+    }
+
+    for (final MarkerGroup markerGroup in sortedList) {
+      if (activeGroupId != null && markerGroup.id == activeGroupId) {
+        continue;
+      }
+      markerGroupIconPainter.paintMarkerGroupHigh(
         canvas,
         size,
         theme,

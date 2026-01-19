@@ -43,6 +43,7 @@ class HorizontalBarrierStyle extends BarrierStyle {
     this.labelShape = LabelShape.rectangle,
     this.labelHeight = 24,
     this.labelPadding = 4,
+    this.labelWidth,
     this.rightMargin = 4,
     Color color = const Color(0xFF00A79E),
     Color titleBackgroundColor = const Color(0xFF0E0E0E),
@@ -78,6 +79,13 @@ class HorizontalBarrierStyle extends BarrierStyle {
 
   /// Padding of label.
   final double labelPadding;
+
+  /// 标签的固定宽度。
+  ///
+  /// 如果设置了此值，标签将使用此宽度（或文字实际宽度 + padding，取较大者），
+  /// 文字在标签内居中显示。
+  /// 如果为 null，则使用原有的动态计算逻辑（文字宽度 + labelPadding * 2）。
+  final double? labelWidth;
 
   /// Right margin of the label from the edge of the chart.
   final double rightMargin;
@@ -120,6 +128,7 @@ class HorizontalBarrierStyle extends BarrierStyle {
     LabelShape? labelShape,
     double? labelHeight,
     double? labelPadding,
+    double? labelWidth,
     double? rightMargin,
     Color? color,
     Color? titleBackgroundColor,
@@ -137,6 +146,7 @@ class HorizontalBarrierStyle extends BarrierStyle {
         labelShape: labelShape ?? this.labelShape,
         labelHeight: labelHeight ?? this.labelHeight,
         labelPadding: labelPadding ?? this.labelPadding,
+        labelWidth: labelWidth ?? this.labelWidth,
         rightMargin: rightMargin ?? this.rightMargin,
         color: color ?? this.color,
         titleBackgroundColor: titleBackgroundColor ?? this.titleBackgroundColor,

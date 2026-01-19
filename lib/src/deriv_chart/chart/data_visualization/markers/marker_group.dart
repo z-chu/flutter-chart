@@ -32,6 +32,8 @@ class MarkerGroup implements Comparable<MarkerGroup> {
   /// @param props Additional properties that can affect rendering behavior.
   /// @param style The visual style to apply to markers in this group.
   /// @param currentEpoch The current epoch timestamp, used for dynamic progress calculations.
+  /// @param currentQuote The current price quote, used for real-time profit/loss calculations.
+  /// @param zIndex The drawing order of this marker group. Higher values are drawn on top.
   MarkerGroup(
     this.markers, {
     required this.type,
@@ -46,8 +48,10 @@ class MarkerGroup implements Comparable<MarkerGroup> {
       ),
     ),
     this.currentEpoch,
+    this.currentQuote,
     this.profitAndLossText,
     this.onTap,
+    this.zIndex = 0,
   });
 
   /// The list of ChartMarker objects that belong to this group.
@@ -82,11 +86,23 @@ class MarkerGroup implements Comparable<MarkerGroup> {
   /// the remaining duration as an animated progress arc.
   final int? currentEpoch;
 
+  /// The current price quote, used for real-time profit/loss calculations.
+  /// This value represents the latest market price and can be used by marker painters
+  /// to calculate and display real-time profit/loss status by comparing with the
+  /// entry price. For example, contract markers can show whether the position is
+  /// currently in profit or loss based on this value and the trade direction.
+  final double? currentQuote;
+
   /// The text to display in the profit and loss label.
   final String? profitAndLossText;
 
   /// Callback when the circular contract marker of the marker group is tapped.
   final VoidCallback? onTap;
+
+  /// The drawing order of this marker group.
+  /// Marker groups with higher zIndex values are drawn on top of those with lower values.
+  /// Default is 0. Use positive values to bring markers to the front.
+  final int zIndex;
 
   /// Compares this marker group with another based on the epoch of their first markers.
   /// This is useful for sorting marker groups chronologically.

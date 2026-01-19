@@ -40,6 +40,7 @@ class CandleIndicator extends HorizontalBarrier {
     required this.granularity,
     required this.serverTime,
     this.showTimer = false,
+    this.timerTextStyle,
     String? id,
     HorizontalBarrierStyle style = const HorizontalBarrierStyle(),
     HorizontalBarrierVisibility visibility =
@@ -69,6 +70,9 @@ class CandleIndicator extends HorizontalBarrier {
 
   /// Wether to show the candle close time timer or not.
   final bool showTimer;
+
+  /// 计时器的文本样式，如果为 null 则使用默认的 style.textStyle
+  final TextStyle? timerTextStyle;
 
   Timer? _timer;
 

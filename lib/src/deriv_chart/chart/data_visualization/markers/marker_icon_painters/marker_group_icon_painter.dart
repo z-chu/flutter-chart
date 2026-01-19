@@ -86,4 +86,72 @@ abstract class MarkerGroupIconPainter extends MarkerIconPainter {
     PainterProps painterProps,
     AnimationInfo animationInfo,
   );
+
+  /// Paints marker group on the canvas (high layer)
+  /// Renders a group of related markers on the chart canvas.
+  ///
+  /// This abstract method must be implemented by concrete subclasses to provide
+  /// specific rendering logic for different types of marker groups. It's called
+  /// by the `MarkerGroupPainter` class as part of the chart's rendering pipeline.
+  ///
+  /// Implementations of this method typically:
+  /// 1. Convert marker positions from market data (epoch/quote) to canvas coordinates
+  /// 2. Apply visual effects like opacity based on marker positions
+  /// 3. Render individual markers with their specific visual representations
+  /// 4. Add additional visual elements like lines, labels, or indicators
+  ///
+  /// @param canvas The canvas on which to paint.
+  /// @param size The size of the drawing area.
+  /// @param theme The chart's theme, which provides colors and styles.
+  /// @param markerGroup The group of markers to render.
+  /// @param epochToX A function that converts epoch timestamps to X coordinates.
+  /// @param quoteToY A function that converts price quotes to Y coordinates.
+  /// @param painterProps Properties that affect how markers are rendered, such as zoom level.
+  /// @param animationInfo Information about any ongoing animations.
+  void paintMarkerGroupHigh(
+    Canvas canvas,
+    Size size,
+    ChartTheme theme,
+    MarkerGroup markerGroup,
+    EpochToX epochToX,
+    QuoteToY quoteToY,
+    PainterProps painterProps,
+    AnimationInfo animationInfo,
+  ) {
+    // Default implementation does nothing.
+    // Subclasses can override to paint barrier lines.
+  }
+
+  /// Prepares marker group data before painting (e.g., position calculations).
+  ///
+  /// This method is called for all visible marker groups before any painting occurs.
+  /// It allows subclasses to perform calculations that depend on knowing all markers,
+  /// such as overlap detection and position adjustments.
+  ///
+  /// The default implementation does nothing. Subclasses that need to handle
+  /// marker overlap or other pre-calculations should override this method.
+  ///
+  /// @param markerGroup The group of markers to prepare.
+  /// @param size The size of the drawing area.
+  /// @param epochToX A function that converts epoch timestamps to X coordinates.
+  /// @param quoteToY A function that converts price quotes to Y coordinates.
+  /// @param painterProps Properties that affect how markers are rendered.
+  void prepareMarkerGroup(
+    MarkerGroup markerGroup,
+    Size size,
+    EpochToX epochToX,
+    QuoteToY quoteToY,
+    PainterProps painterProps,
+  ) {
+    // Default implementation does nothing.
+    // Subclasses can override to perform pre-calculations.
+  }
+
+  /// Called at the beginning of each frame to reset any per-frame state.
+  ///
+  /// This method is called once per frame before any marker groups are processed.
+  /// Subclasses can override to clear cached data from the previous frame.
+  void onFrameStart() {
+    // Default implementation does nothing.
+  }
 }

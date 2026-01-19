@@ -118,14 +118,19 @@ class HorizontalBarrierPainter<T extends HorizontalBarrier>
       animatedValue.toStringAsFixed(chartConfig.pipSize),
       style.textStyle,
     );
+
+    // 计算标签宽度：如果设置了 labelWidth，取 labelWidth 和文字宽度的较大值
+    final double textWidthWithPadding =
+        valuePainter.width + style.labelPadding * 2;
+    final double actualLabelWidth = style.labelWidth != null
+        ? style.labelWidth! > textWidthWithPadding
+            ? style.labelWidth!
+            : textWidthWithPadding
+        : textWidthWithPadding;
+
     final Rect labelArea = Rect.fromCenter(
-      center: Offset(
-          size.width -
-              style.rightMargin -
-              style.labelPadding -
-              valuePainter.width / 2,
-          y),
-      width: valuePainter.width + style.labelPadding * 2,
+      center: Offset(size.width - style.rightMargin - actualLabelWidth / 2, y),
+      width: actualLabelWidth,
       height: style.labelHeight,
     );
 
