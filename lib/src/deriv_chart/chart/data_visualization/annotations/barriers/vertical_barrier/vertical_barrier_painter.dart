@@ -77,7 +77,7 @@ class VerticalBarrierPainter extends SeriesPainter<VerticalBarrier> {
     }
 
     final double lineX = epochToX(animatedEpoch!);
-    final double lineEndY = size.height - 20;
+    final double lineEndY = size.height;
 
     if (dotY != null && !series.longLine) {
       lineStartY = dotY;
