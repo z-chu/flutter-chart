@@ -45,13 +45,14 @@ class CandleIndicator extends HorizontalBarrier {
     HorizontalBarrierStyle style = const HorizontalBarrierStyle(),
     HorizontalBarrierVisibility visibility =
         HorizontalBarrierVisibility.keepBarrierLabelVisible,
+    bool longLine = false,
   }) : super(
           candle.quote,
           epoch: candle.epoch,
           id: id,
           style: style,
           visibility: visibility,
-          longLine: false,
+          longLine: longLine,
         ) {
     _startTimer();
   }
