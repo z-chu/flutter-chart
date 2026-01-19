@@ -18,6 +18,10 @@ class YAxisConfig {
   ///where it might not be set yet.
   double? cachedLabelWidth;
 
+  /// Whether to enable Y-axis clipping. When false, chart data can be drawn
+  /// over the Y-axis labels area.
+  bool enableClipping = true;
+
   ///Sets and caches the label width for the Y-axis. Returns the set width for
   ///potential immediate use.
   double setLabelWidth(double width) {
@@ -28,12 +32,21 @@ class YAxisConfig {
   ///Executes painting logic within a clipped area of the canvas to prevent
   ///drawing over the Y-axis labels.
   void yAxisClipping(Canvas canvas, Size size, VoidCallback paintingLogic) {
-    final Rect clipRect =
-        Rect.fromLTWH(0, 0, size.width - (cachedLabelWidth ?? 0), size.height);
-    canvas
-      ..save()
-      ..clipRect(clipRect);
-    paintingLogic();
-    canvas.restore();
+    if (enableClipping) {
+      final Rect clipRect = Rect.fromLTWH(
+        0,
+        0,
+        size.width - (cachedLabelWidth ?? 0),
+        size.height,
+      );
+      canvas
+        ..save()
+        ..clipRect(clipRect);
+      paintingLogic();
+      canvas.restore();
+    } else {
+      // 不裁剪，直接执行绘制逻辑
+      paintingLogic();
+    }
   }
 }

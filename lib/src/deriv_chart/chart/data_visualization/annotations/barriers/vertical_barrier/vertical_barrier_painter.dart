@@ -4,6 +4,7 @@ import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_serie
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/models/animation_info.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/models/barrier_objects.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/helpers/paint_functions/paint_line.dart';
+import 'package:deriv_chart/src/deriv_chart/chart/y_axis/y_axis_config.dart';
 import 'package:deriv_chart/src/theme/painting_styles/barrier_style.dart';
 import 'package:flutter/material.dart';
 
@@ -25,55 +26,72 @@ class VerticalBarrierPainter extends SeriesPainter<VerticalBarrier> {
     required AnimationInfo animationInfo,
   }) {
     if (series.isOnRange) {
-      final VerticalBarrierStyle style =
-          series.style as VerticalBarrierStyle? ?? theme.verticalBarrierStyle;
-
-      final Paint paint = Paint()
-        ..color = style.color
-        ..strokeWidth = 1
-        ..style = PaintingStyle.stroke;
-
-      int? animatedEpoch;
-      double lineStartY = 0;
-      double? dotY;
-
-      if (series.previousObject == null) {
-        animatedEpoch = series.epoch;
-        if (series.quote != null) {
-          dotY = quoteToY(series.quote!);
-        }
-      } else {
-        final VerticalBarrierObject prevObject =
-            series.previousObject as VerticalBarrierObject;
-        animatedEpoch = lerpDouble(prevObject.epoch.toDouble(), series.epoch,
-                animationInfo.currentTickPercent)!
-            .toInt();
-
-        if (series.annotationObject.quote != null && prevObject.quote != null) {
-          dotY = quoteToY(lerpDouble(
-              prevObject.quote,
-              series.annotationObject.quote,
-              animationInfo.currentTickPercent)!);
-        }
-      }
-
-      final double lineX = epochToX(animatedEpoch!);
-      final double lineEndY = size.height - 20;
-
-      if (dotY != null && !series.longLine) {
-        lineStartY = dotY;
-      }
-
-      if (style.isDashed) {
-        paintVerticalDashedLine(
-            canvas, lineX, lineStartY, lineEndY, style.color, 1);
-      } else {
-        canvas.drawLine(
-            Offset(lineX, lineStartY), Offset(lineX, lineEndY), paint);
-      }
-
-      _paintLineLabel(canvas, lineX, lineStartY, lineEndY, style);
+      // 使用 yAxisClipping 包裹绘制逻辑，防止绘制到 Y 轴标签区域
+      YAxisConfig.instance.yAxisClipping(canvas, size, () {
+        _paintVerticalBarrier(
+          canvas,
+          size,
+          epochToX,
+          quoteToY,
+          animationInfo,
+        );
+      });
     }
+  }
+
+  void _paintVerticalBarrier(
+    Canvas canvas,
+    Size size,
+    EpochToX epochToX,
+    QuoteToY quoteToY,
+    AnimationInfo animationInfo,
+  ) {
+    final VerticalBarrierStyle style =
+        series.style as VerticalBarrierStyle? ?? theme.verticalBarrierStyle;
+
+    final Paint paint = Paint()
+      ..color = style.color
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    int? animatedEpoch;
+    double lineStartY = 0;
+    double? dotY;
+
+    if (series.previousObject == null) {
+      animatedEpoch = series.epoch;
+      if (series.quote != null) {
+        dotY = quoteToY(series.quote!);
+      }
+    } else {
+      final VerticalBarrierObject prevObject =
+          series.previousObject as VerticalBarrierObject;
+      animatedEpoch = lerpDouble(prevObject.epoch.toDouble(), series.epoch,
+              animationInfo.currentTickPercent)!
+          .toInt();
+
+      if (series.annotationObject.quote != null && prevObject.quote != null) {
+        dotY = quoteToY(lerpDouble(prevObject.quote,
+            series.annotationObject.quote, animationInfo.currentTickPercent)!);
+      }
+    }
+
+    final double lineX = epochToX(animatedEpoch!);
+    final double lineEndY = size.height - 20;
+
+    if (dotY != null && !series.longLine) {
+      lineStartY = dotY;
+    }
+
+    if (style.isDashed) {
+      paintVerticalDashedLine(
+          canvas, lineX, lineStartY, lineEndY, style.color, 1);
+    } else {
+      canvas.drawLine(
+          Offset(lineX, lineStartY), Offset(lineX, lineEndY), paint);
+    }
+
+    _paintLineLabel(canvas, lineX, lineStartY, lineEndY, style);
   }
 
   void _paintLineLabel(
