@@ -514,9 +514,13 @@ class AccumulatorIndicatorPainter extends SeriesPainter<AccumulatorIndicator> {
         mainLineStartX,
         y,
         style.color,
-        1,
+        style.thickness,
+        dashWidth: style.dashWidth,
+        dashSpace: style.dashSpace,
       );
     } else {
+      _paint.strokeWidth = style.thickness;
+      _paint.style = PaintingStyle.stroke;
       canvas.drawLine(
           Offset(mainLineStartX, y), Offset(mainLineEndX, y), _paint);
     }

@@ -9,6 +9,9 @@ abstract class BarrierStyle extends ChartPaintingStyle {
     this.color = const Color(0xFF00A79E),
     this.titleBackgroundColor = const Color(0xFF0E0E0E),
     this.isDashed = true,
+    this.dashWidth = 3,
+    this.dashSpace = 3,
+    this.thickness = 1,
     this.textStyle = const TextStyle(
       fontSize: 10,
       height: 1.3,
@@ -27,13 +30,22 @@ abstract class BarrierStyle extends ChartPaintingStyle {
   /// Whether barrier's line should be dashed.
   final bool isDashed;
 
+  /// Width of each dash segment in the dashed line.
+  final double dashWidth;
+
+  /// Space between dash segments in the dashed line.
+  final double dashSpace;
+
+  /// Thickness of the barrier line.
+  final double thickness;
+
   /// Title label background color.
   final Color titleBackgroundColor;
 
   @override
   String toString() =>
       '${super.toString()}$color, ${textStyle.toStringShort()}, $isDashed, '
-      '$titleBackgroundColor';
+      '$dashWidth, $dashSpace, $thickness, $titleBackgroundColor';
 }
 
 /// Horizontal barrier style.
@@ -49,6 +61,9 @@ class HorizontalBarrierStyle extends BarrierStyle {
     Color titleBackgroundColor = const Color(0xFF0E0E0E),
     this.secondaryBackgroundColor = const Color(0xFF607D8B),
     bool isDashed = true,
+    double dashWidth = 3,
+    double dashSpace = 3,
+    double thickness = 1,
     this.hasBlinkingDot = false,
     Color? blinkingDotColor,
     this.arrowSize = 5,
@@ -68,6 +83,9 @@ class HorizontalBarrierStyle extends BarrierStyle {
           color: color,
           titleBackgroundColor: titleBackgroundColor,
           isDashed: isDashed,
+          dashWidth: dashWidth,
+          dashSpace: dashSpace,
+          thickness: thickness,
           textStyle: textStyle,
         );
 
@@ -134,6 +152,9 @@ class HorizontalBarrierStyle extends BarrierStyle {
     Color? titleBackgroundColor,
     Color? secondaryBackgroundColor,
     bool? isDashed,
+    double? dashWidth,
+    double? dashSpace,
+    double? thickness,
     bool? hasBlinkingDot,
     Color? blinkingDotColor,
     double? arrowSize,
@@ -153,6 +174,9 @@ class HorizontalBarrierStyle extends BarrierStyle {
         secondaryBackgroundColor:
             secondaryBackgroundColor ?? this.secondaryBackgroundColor,
         isDashed: isDashed ?? this.isDashed,
+        dashWidth: dashWidth ?? this.dashWidth,
+        dashSpace: dashSpace ?? this.dashSpace,
+        thickness: thickness ?? this.thickness,
         hasBlinkingDot: hasBlinkingDot ?? this.hasBlinkingDot,
         blinkingDotColor: blinkingDotColor ?? this.blinkingDotColor,
         arrowSize: arrowSize ?? this.arrowSize,
@@ -176,6 +200,9 @@ class VerticalBarrierStyle extends BarrierStyle {
     Color color = Colors.grey,
     Color titleBackgroundColor = Colors.transparent,
     bool isDashed = true,
+    double dashWidth = 3,
+    double dashSpace = 3,
+    double thickness = 1,
     this.labelPosition = VerticalBarrierLabelPosition.auto,
     this.customLabelPainter,
     TextStyle textStyle = const TextStyle(
@@ -189,6 +216,9 @@ class VerticalBarrierStyle extends BarrierStyle {
           color: color,
           titleBackgroundColor: titleBackgroundColor,
           isDashed: isDashed,
+          dashWidth: dashWidth,
+          dashSpace: dashSpace,
+          thickness: thickness,
           textStyle: textStyle,
         );
 

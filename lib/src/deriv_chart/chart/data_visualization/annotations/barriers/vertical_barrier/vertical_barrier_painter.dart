@@ -51,7 +51,7 @@ class VerticalBarrierPainter extends SeriesPainter<VerticalBarrier> {
 
     final Paint paint = Paint()
       ..color = style.color
-      ..strokeWidth = 1
+      ..strokeWidth = style.thickness
       ..style = PaintingStyle.stroke;
 
     int? animatedEpoch;
@@ -85,7 +85,8 @@ class VerticalBarrierPainter extends SeriesPainter<VerticalBarrier> {
 
     if (style.isDashed) {
       paintVerticalDashedLine(
-          canvas, lineX, lineStartY, lineEndY, style.color, 1);
+          canvas, lineX, lineStartY, lineEndY, style.color, style.thickness,
+          dashWidth: style.dashWidth, dashSpace: style.dashSpace);
     } else {
       canvas.drawLine(
           Offset(lineX, lineStartY), Offset(lineX, lineEndY), paint);

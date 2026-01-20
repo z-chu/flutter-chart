@@ -192,10 +192,14 @@ class CandleIndicatorPainter extends HorizontalBarrierPainter<CandleIndicator> {
             lineStartX,
             y,
             style.lineColor,
-            1,
+            style.thickness,
+            dashWidth: style.dashWidth,
+            dashSpace: style.dashSpace,
           );
         } else {
           _paint.color = style.lineColor;
+          _paint.strokeWidth = style.thickness;
+          _paint.style = PaintingStyle.stroke;
           canvas.drawLine(Offset(lineStartX, y), Offset(lineEndX, y), _paint);
         }
       }
