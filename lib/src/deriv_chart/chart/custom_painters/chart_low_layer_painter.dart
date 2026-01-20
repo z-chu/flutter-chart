@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/models/animation_info.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/helpers/paint_functions/paint_line.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/y_axis/y_axis_config.dart';
 import 'package:deriv_chart/src/models/chart_low_layer_config.dart';
@@ -16,6 +17,7 @@ class ChartLowLayerPainter {
     required Color defaultBackgroundColor,
     required double topY,
     required double bottomY,
+    AnimationInfo animationInfo = const AnimationInfo(),
   }) {
     // 使用 yAxisClipping 包裹绘制逻辑，防止绘制到 Y 轴标签区域
     YAxisConfig.instance.yAxisClipping(canvas, size, () {
@@ -27,6 +29,7 @@ class ChartLowLayerPainter {
         defaultBackgroundColor: defaultBackgroundColor,
         topY: topY,
         bottomY: bottomY,
+        animationInfo: animationInfo,
       );
     });
   }
@@ -39,10 +42,33 @@ class ChartLowLayerPainter {
     required Color defaultBackgroundColor,
     required double topY,
     required double bottomY,
+    required AnimationInfo animationInfo,
   }) {
-    // 计算背景区域的 X 坐标
-    final double startX = epochToCanvasX(config.startEpoch);
-    final double endX = epochToCanvasX(config.endEpoch);
+    // 计算动画后的 epoch 值
+    int animatedStartEpoch = config.startEpoch;
+    int animatedEndEpoch = config.endEpoch;
+
+    final ChartLowLayerConfig? previousConfig = config.previousConfig;
+    if (previousConfig != null) {
+      // 使用 lerpDouble 进行插值动画
+      animatedStartEpoch = lerpDouble(
+            previousConfig.startEpoch.toDouble(),
+            config.startEpoch.toDouble(),
+            animationInfo.currentTickPercent,
+          )?.toInt() ??
+          config.startEpoch;
+
+      animatedEndEpoch = lerpDouble(
+            previousConfig.endEpoch.toDouble(),
+            config.endEpoch.toDouble(),
+            animationInfo.currentTickPercent,
+          )?.toInt() ??
+          config.endEpoch;
+    }
+
+    // 计算背景区域的 X 坐标（使用动画后的值）
+    final double startX = epochToCanvasX(animatedStartEpoch);
+    final double endX = epochToCanvasX(animatedEndEpoch);
 
     // 确保区域在可见范围内
     if (endX < 0 || startX > size.width) {
@@ -81,12 +107,13 @@ class ChartLowLayerPainter {
       defaultBackgroundColor: defaultBackgroundColor,
     );
 
-    // 绘制开始和结束时间的竖线
+    // 绘制开始和结束时间的竖线（使用动画后的 epoch 值）
     _drawVerticalLines(
       canvas: canvas,
       size: size,
       config: config,
-      epochToCanvasX: epochToCanvasX,
+      startX: startX,
+      endX: endX,
       topY: topY,
       bottomY: bottomY,
     );
@@ -174,12 +201,12 @@ class ChartLowLayerPainter {
     required Canvas canvas,
     required Size size,
     required ChartLowLayerConfig config,
-    required double Function(int) epochToCanvasX,
+    required double startX,
+    required double endX,
     required double topY,
     required double bottomY,
   }) {
     // 绘制开始时间的竖线
-    final double startX = epochToCanvasX(config.startEpoch);
     if (config.startLineConfig != null) {
       if (startX >= 0 && startX <= size.width) {
         _drawVerticalLine(
@@ -194,7 +221,6 @@ class ChartLowLayerPainter {
 
     // 绘制结束时间的竖线
     if (config.endLineConfig != null) {
-      final double endX = epochToCanvasX(config.endEpoch);
       //如果结束时间与开始时间相同，则不绘制结束时间的竖线
       if (endX == startX && config.startLineConfig != null) {
         return;

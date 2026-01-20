@@ -62,6 +62,7 @@ class ChartDataPainter extends BaseChartDataPainter {
         defaultBackgroundColor: theme.backgroundColor,
         topY: 0,
         bottomY: size.height,
+        animationInfo: animationInfo,
       );
     }
 

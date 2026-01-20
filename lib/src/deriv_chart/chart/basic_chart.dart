@@ -158,6 +158,9 @@ class BasicChartState<T extends BasicChart> extends State<T>
 
   bool _isTickAnimationPlaying = false;
 
+  /// 带动画状态的低层背景配置
+  ChartLowLayerConfig? _lowLayerConfigWithAnimation;
+
   @override
   void initState() {
     super.initState();
@@ -177,6 +180,9 @@ class BasicChartState<T extends BasicChart> extends State<T>
     if (widget.mainSeries.id == oldChart.mainSeries.id) {
       widget.mainSeries.didUpdate(oldChart.mainSeries);
     }
+
+    // 更新低层背景配置的 previousConfig
+    _updateLowLayerConfigAnimation(oldChart);
 
     // Detect if data is completely reset (e.g., symbol or granularity change)
     // Skip animation if:
@@ -201,6 +207,12 @@ class BasicChartState<T extends BasicChart> extends State<T>
     }
 
     _playNewTickAnimation();
+  }
+
+  /// 更新低层背景配置的动画状态
+  void _updateLowLayerConfigAnimation(BasicChart oldChart) {
+    _lowLayerConfigWithAnimation =
+        widget.chartLowLayerConfig?.animateFrom(oldChart.chartLowLayerConfig);
   }
 
   @override
@@ -506,29 +518,37 @@ class BasicChartState<T extends BasicChart> extends State<T>
   // Main series and indicators on top of main series.
   Widget _buildChartData() => MultipleAnimatedBuilder(
         animations: getChartDataAnimations(),
-        builder: (BuildContext context, _) => RepaintBoundary(
-          child: Opacity(
-            opacity: widget.opacity,
-            child: CustomPaint(
-              painter: ChartDataPainter(
-                animationInfo: AnimationInfo(
-                  currentTickPercent: currentTickAnimation.value,
+        builder: (BuildContext context, _) {
+          // 当动画完成时，清除动画状态
+          if (currentTickAnimation.value == 1) {
+            _lowLayerConfigWithAnimation =
+                _lowLayerConfigWithAnimation?.clearAnimation();
+          }
+
+          return RepaintBoundary(
+            child: Opacity(
+              opacity: widget.opacity,
+              child: CustomPaint(
+                painter: ChartDataPainter(
+                  animationInfo: AnimationInfo(
+                    currentTickPercent: currentTickAnimation.value,
+                  ),
+                  mainSeries: widget.mainSeries,
+                  chartConfig: context.watch<ChartConfig>(),
+                  theme: context.watch<ChartTheme>(),
+                  epochToCanvasX: xAxis.xFromEpoch,
+                  quoteToCanvasY: chartQuoteToCanvasY,
+                  rightBoundEpoch: xAxis.rightBoundEpoch,
+                  leftBoundEpoch: xAxis.leftBoundEpoch,
+                  topY: chartQuoteToCanvasY(widget.mainSeries.maxValue),
+                  bottomY: chartQuoteToCanvasY(widget.mainSeries.minValue),
+                  chartScaleModel: context.watch<ChartScaleModel>(),
+                  chartLowLayerConfig: _lowLayerConfigWithAnimation,
                 ),
-                mainSeries: widget.mainSeries,
-                chartConfig: context.watch<ChartConfig>(),
-                theme: context.watch<ChartTheme>(),
-                epochToCanvasX: xAxis.xFromEpoch,
-                quoteToCanvasY: chartQuoteToCanvasY,
-                rightBoundEpoch: xAxis.rightBoundEpoch,
-                leftBoundEpoch: xAxis.leftBoundEpoch,
-                topY: chartQuoteToCanvasY(widget.mainSeries.maxValue),
-                bottomY: chartQuoteToCanvasY(widget.mainSeries.minValue),
-                chartScaleModel: context.watch<ChartScaleModel>(),
-                chartLowLayerConfig: widget.chartLowLayerConfig,
               ),
             ),
-          ),
-        ),
+          );
+        },
       );
 
   /// Builds a gesture layer for Y-axis scaling that intercepts vertical drag

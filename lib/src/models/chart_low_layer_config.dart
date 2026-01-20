@@ -90,6 +90,7 @@ class ChartLowLayerConfig {
     this.patternConfig,
     this.startLineConfig,
     this.endLineConfig,
+    this.previousConfig,
   });
 
   /// 开始时间（epoch 时间戳，毫秒）
@@ -109,6 +110,39 @@ class ChartLowLayerConfig {
 
   /// 结束时间处的竖线配置，如果为 null 则不绘制
   final LowLayerLineConfig? endLineConfig;
+
+  /// 上一帧的配置，用于动画插值
+  final ChartLowLayerConfig? previousConfig;
+
+  /// 根据旧配置创建用于动画的新配置
+  /// 如果 epoch 发生变化，返回带有 previousConfig 的新配置；否则返回 this
+  ChartLowLayerConfig animateFrom(ChartLowLayerConfig? oldConfig) {
+    if (oldConfig == null) {
+      return this;
+    }
+
+    final bool epochChanged =
+        oldConfig.startEpoch != startEpoch || oldConfig.endEpoch != endEpoch;
+
+    return epochChanged
+        ? _copyWith(previousConfig: oldConfig._copyWith())
+        : this;
+  }
+
+  /// 清除动画状态
+  ChartLowLayerConfig clearAnimation() =>
+      previousConfig == null ? this : _copyWith();
+
+  ChartLowLayerConfig _copyWith({ChartLowLayerConfig? previousConfig}) =>
+      ChartLowLayerConfig(
+        startEpoch: startEpoch,
+        endEpoch: endEpoch,
+        backgroundColor: backgroundColor,
+        patternConfig: patternConfig,
+        startLineConfig: startLineConfig,
+        endLineConfig: endLineConfig,
+        previousConfig: previousConfig,
+      );
 
   @override
   bool operator ==(Object other) =>
