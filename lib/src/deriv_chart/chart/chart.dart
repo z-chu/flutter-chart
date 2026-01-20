@@ -1,21 +1,23 @@
 import 'package:collection/collection.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/models/chart_scale_model.dart';
+import 'package:deriv_chart/src/deriv_chart/chart/gestures/gesture_manager.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/mobile_chart_frame_dividers.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/x_axis/x_axis_model.dart';
-import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_variant.dart';
-import 'package:deriv_chart/src/theme/dimens.dart';
-import 'package:flutter/foundation.dart';
-import 'package:deriv_chart/src/deriv_chart/chart/gestures/gesture_manager.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/x_axis/x_axis_wrapper.dart';
 import 'package:deriv_chart/src/deriv_chart/drawing_tool_chart/drawing_tools.dart';
+import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_variant.dart';
 import 'package:deriv_chart/src/misc/callbacks.dart';
 import 'package:deriv_chart/src/models/chart_axis_config.dart';
 import 'package:deriv_chart/src/models/chart_config.dart';
+import 'package:deriv_chart/src/models/chart_low_layer_config.dart';
 import 'package:deriv_chart/src/models/indicator_input.dart';
 import 'package:deriv_chart/src/theme/chart_default_light_theme.dart';
+import 'package:deriv_chart/src/theme/dimens.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+
 import '../../add_ons/indicators_ui/indicator_config.dart';
 import '../../add_ons/repository.dart';
 import '../../misc/chart_controller.dart';
@@ -33,9 +35,8 @@ import 'data_visualization/markers/marker_series.dart';
 import 'data_visualization/models/chart_object.dart';
 import 'main_chart.dart';
 
-part 'chart_state_web.dart';
-
 part 'chart_state_mobile.dart';
+part 'chart_state_web.dart';
 
 const Duration _defaultDuration = Duration(milliseconds: 300);
 
@@ -83,6 +84,7 @@ class Chart extends StatefulWidget {
     this.loadingAnimationColor,
     this.useDrawingToolsV2 = false,
     this.enableYAxisScaling = true,
+    this.chartLowLayerConfig,
     Key? key,
   }) : super(key: key);
 
@@ -223,6 +225,10 @@ class Chart extends StatefulWidget {
   /// Whether to enable Y-axis scaling by dragging on the quote labels area.
   /// Defaults to true.
   final bool enableYAxisScaling;
+
+  /// 磨砂背景配置，用于在图表数据下方绘制磨砂背景区域
+  /// 背景绘制在网格线之上，但在所有其他绘制元素之下
+  final ChartLowLayerConfig? chartLowLayerConfig;
 
   @override
   State<StatefulWidget> createState() =>

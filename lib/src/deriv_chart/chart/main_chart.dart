@@ -72,6 +72,7 @@ class MainChart extends BasicChart {
     VisibleQuoteAreaChangedCallback? onQuoteAreaChanged,
     this.interactiveLayerBehaviour,
     this.useDrawingToolsV2 = false,
+    super.chartLowLayerConfig,
   })  : _mainSeries = mainSeries,
         chartDataList = <ChartData>[
           mainSeries,

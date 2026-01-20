@@ -54,6 +54,7 @@ class _ChartStateWeb extends _ChartState {
             interactiveLayerBehaviour: widget.interactiveLayerBehaviour,
             useDrawingToolsV2: widget.useDrawingToolsV2,
             enableYAxisScaling: widget.enableYAxisScaling,
+            chartLowLayerConfig: widget.chartLowLayerConfig,
           ),
         ),
         if (bottomSeries?.isNotEmpty ?? false)

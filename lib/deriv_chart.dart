@@ -146,6 +146,7 @@ export 'src/deriv_chart/chart/data_visualization/chart_series/ohlc_series/ohlc_t
 export 'src/deriv_chart/chart/data_visualization/chart_series/ohlc_series/ohlc_painter.dart';
 export 'src/deriv_chart/chart/data_visualization/chart_series/ohlc_series/ohlc_painting.dart';
 export 'src/deriv_chart/chart/data_visualization/chart_series/data_painter.dart';
+export 'src/models/chart_low_layer_config.dart';
 export 'src/theme/chart_default_theme.dart';
 export 'src/models/chart_config.dart';
 export 'src/deriv_chart/chart/data_visualization/markers/marker_icon_painters/accumulator_marker_icon_painter.dart';

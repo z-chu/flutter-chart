@@ -1,15 +1,16 @@
 // ignore_for_file: unnecessary_null_comparison
-
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_data.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/models/animation_info.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/models/chart_scale_model.dart';
 import 'package:deriv_chart/src/models/chart_config.dart';
+import 'package:deriv_chart/src/models/chart_low_layer_config.dart';
 import 'package:deriv_chart/src/theme/chart_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../data_visualization/chart_series/line_series/line_series.dart';
 import '../data_visualization/chart_series/ohlc_series/candle/candle_series.dart';
 import '../data_visualization/chart_series/series.dart';
+import 'chart_low_layer_painter.dart';
 
 /// A `CustomPainter` which paints the chart data inside the chart.
 class ChartDataPainter extends BaseChartDataPainter {
@@ -28,6 +29,7 @@ class ChartDataPainter extends BaseChartDataPainter {
     required ChartScaleModel chartScaleModel,
     List<Series> secondarySeries = const <Series>[],
     AnimationInfo animationInfo = const AnimationInfo(),
+    this.chartLowLayerConfig,
   }) : super(
           chartConfig: chartConfig,
           theme: theme,
@@ -45,8 +47,25 @@ class ChartDataPainter extends BaseChartDataPainter {
   /// Chart's main data series.
   final Series mainSeries;
 
+  /// 磨砂背景配置，如果为 null 则不绘制背景
+  final ChartLowLayerConfig? chartLowLayerConfig;
+
   @override
   void paint(Canvas canvas, Size size) {
+    // 先绘制磨砂背景（在网格线之上，但在所有其他元素之下）
+    if (chartLowLayerConfig != null) {
+      ChartLowLayerPainter.paint(
+        canvas: canvas,
+        size: size,
+        config: chartLowLayerConfig!,
+        epochToCanvasX: epochToCanvasX,
+        defaultBackgroundColor: theme.backgroundColor,
+        topY: 0,
+        bottomY: size.height,
+      );
+    }
+
+    // 然后绘制主系列
     mainSeries.paint(
       canvas,
       size,
@@ -73,9 +92,13 @@ class ChartDataPainter extends BaseChartDataPainter {
     bool visibleAnimationChanged() =>
         mainSeries.shouldRepaint(oldDelegate.mainSeries);
 
+    bool backgroundChanged() =>
+        chartLowLayerConfig != oldDelegate.chartLowLayerConfig;
+
     return super.shouldRepaint(oldDelegate) ||
         styleChanged() ||
-        visibleAnimationChanged();
+        visibleAnimationChanged() ||
+        backgroundChanged();
   }
 }
 

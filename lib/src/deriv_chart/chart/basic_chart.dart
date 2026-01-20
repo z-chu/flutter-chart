@@ -7,6 +7,7 @@ import 'package:deriv_chart/src/deriv_chart/chart/y_axis/y_grid_line_painter.dar
 import 'package:deriv_chart/src/deriv_chart/chart/x_axis/x_axis_model.dart';
 import 'package:deriv_chart/src/models/chart_axis_config.dart';
 import 'package:deriv_chart/src/models/chart_config.dart';
+import 'package:deriv_chart/src/models/chart_low_layer_config.dart';
 import 'package:deriv_chart/src/theme/chart_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +36,7 @@ class BasicChart extends StatefulWidget {
     this.currentTickAnimationDuration = _defaultDuration,
     this.quoteBoundsAnimationDuration = _defaultDuration,
     this.enableYAxisScaling = true,
+    this.chartLowLayerConfig,
   })  : chartAxisConfig = chartAxisConfig ?? const ChartAxisConfig(),
         super(key: key);
 
@@ -62,6 +64,10 @@ class BasicChart extends StatefulWidget {
   /// Whether to enable Y-axis scaling by dragging on the quote labels area.
   /// Defaults to true.
   final bool enableYAxisScaling;
+
+  /// 磨砂背景配置，用于在图表数据下方绘制磨砂背景区域
+  /// 背景绘制在网格线之上，但在所有其他绘制元素之下
+  final ChartLowLayerConfig? chartLowLayerConfig;
 
   @override
   BasicChartState<BasicChart> createState() => BasicChartState<BasicChart>();
@@ -518,6 +524,7 @@ class BasicChartState<T extends BasicChart> extends State<T>
                 topY: chartQuoteToCanvasY(widget.mainSeries.maxValue),
                 bottomY: chartQuoteToCanvasY(widget.mainSeries.minValue),
                 chartScaleModel: context.watch<ChartScaleModel>(),
+                chartLowLayerConfig: widget.chartLowLayerConfig,
               ),
             ),
           ),

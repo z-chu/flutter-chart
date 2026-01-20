@@ -139,7 +139,8 @@ class _ChartStateMobile extends _ChartState {
                   onCrosshairDisappeared: widget.onCrosshairDisappeared,
                   onCrosshairHover: _onCrosshairHover,
                   onCrosshairTickChanged: widget.onCrosshairTickChanged,
-                  onCrosshairTickEpochChanged: widget.onCrosshairTickEpochChanged,
+                  onCrosshairTickEpochChanged:
+                      widget.onCrosshairTickEpochChanged,
                   loadingAnimationColor: widget.loadingAnimationColor,
                   currentTickAnimationDuration: currentTickAnimationDuration,
                   quoteBoundsAnimationDuration: quoteBoundsAnimationDuration,
@@ -149,6 +150,7 @@ class _ChartStateMobile extends _ChartState {
                   interactiveLayerBehaviour: widget.interactiveLayerBehaviour,
                   useDrawingToolsV2: widget.useDrawingToolsV2,
                   enableYAxisScaling: widget.enableYAxisScaling,
+                  chartLowLayerConfig: widget.chartLowLayerConfig,
                 ),
                 Align(
                   alignment: Alignment.topLeft,
