@@ -1,3 +1,4 @@
+import 'package:deriv_chart/src/deriv_chart/chart/gestures/double_tap_up_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -54,6 +55,8 @@ class GestureManagerState extends State<GestureManager> {
         onLongPressEnd: (LongPressEndDetails d) =>
             _callAll<GestureLongPressEndCallback>(d),
         onTapUp: (TapUpDetails d) => _callAll<GestureTapUpCallback>(d),
+        onDoubleTap: (DoubleTapUpDetails d) =>
+            _callAll<GestureDoubleTapCallback>(d),
         child: Provider<GestureManagerState>.value(
           value: this,
           child: widget.child,

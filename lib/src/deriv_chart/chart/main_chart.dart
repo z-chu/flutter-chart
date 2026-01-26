@@ -22,6 +22,7 @@ import '../interactive_layer/interactive_layer.dart';
 import '../interactive_layer/interactive_layer_behaviours/interactive_layer_behaviour.dart';
 import '../interactive_layer/interactive_layer_behaviours/interactive_layer_desktop_behaviour.dart';
 import 'basic_chart.dart';
+import 'gestures/double_tap_up_details.dart';
 import 'multiple_animated_builder.dart';
 import 'data_visualization/annotations/chart_annotation.dart';
 import 'data_visualization/annotations/barriers/vertical_barrier/vertical_barrier.dart';
@@ -36,6 +37,8 @@ import '../../misc/callbacks.dart';
 import '../../theme/chart_theme.dart';
 import 'package:deriv_chart/src/deriv_chart/drawing_tool_chart/drawing_tools.dart';
 
+import 'gestures/custom_gesture_detector.dart';
+import 'gestures/gesture_manager.dart';
 import 'y_axis/quote_grid.dart';
 
 /// The main chart to display in the chart widget.
@@ -73,6 +76,7 @@ class MainChart extends BasicChart {
     this.interactiveLayerBehaviour,
     this.useDrawingToolsV2 = false,
     super.chartLowLayerConfig,
+    this.onDoubleTap,
   })  : _mainSeries = mainSeries,
         chartDataList = <ChartData>[
           mainSeries,
@@ -161,6 +165,9 @@ class MainChart extends BasicChart {
   /// [CrosshairVariant.largeScreen] is mostly for web.
   final CrosshairVariant crosshairVariant;
 
+  /// Called when a double tap gesture is detected on the chart.
+  final OnChartDoubleTapCallback? onDoubleTap;
+
   @override
   _ChartImplementationState createState() => _ChartImplementationState();
 }
@@ -189,6 +196,9 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
   final YAxisNotifier _yAxisNotifier = YAxisNotifier(YAxisModel.zero());
 
   late final InteractiveLayerBehaviour _interactiveLayerBehaviour;
+
+  /// Gesture manager for handling double tap events.
+  GestureManagerState? _gestureManager;
 
   @override
   double get verticalPadding {
@@ -226,6 +236,28 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
 
     // Handle initial VerticalBarrier visibility
     _fitToInitialVerticalBarriers();
+
+    // Register double tap callback if provided
+    if (widget.onDoubleTap != null) {
+      _doubleTapCallback = (DoubleTapUpDetails d) {
+        _onDoubleTap(d.tapUpDetails);
+      };
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _gestureManager = context.read<GestureManagerState>()
+          ..registerCallback(_doubleTapCallback!);
+      });
+    }
+  }
+
+  GestureDoubleTapCallback? _doubleTapCallback;
+
+  void _onDoubleTap(TapUpDetails details) {
+    if (widget.onDoubleTap == null) return;
+
+    final double quote = chartQuoteFromCanvasY(details.localPosition.dy);
+    final int epoch = xAxis.epochFromX(details.localPosition.dx);
+
+    widget.onDoubleTap!(details.localPosition, quote, epoch);
   }
 
   /// Fits the chart to include any initial VerticalBarriers with fitIfPossible.
@@ -379,6 +411,9 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
 
   @override
   void dispose() {
+    if (_doubleTapCallback != null) {
+      _gestureManager?.removeCallback(_doubleTapCallback!);
+    }
     _currentTickBlinkingController.dispose();
     crosshairZoomOutAnimationController.dispose();
     super.dispose();

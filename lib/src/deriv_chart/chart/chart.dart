@@ -85,6 +85,7 @@ class Chart extends StatefulWidget {
     this.useDrawingToolsV2 = false,
     this.enableYAxisScaling = true,
     this.chartLowLayerConfig,
+    this.onDoubleTap,
     Key? key,
   }) : super(key: key);
 
@@ -229,6 +230,10 @@ class Chart extends StatefulWidget {
   /// 磨砂背景配置，用于在图表数据下方绘制磨砂背景区域
   /// 背景绘制在网格线之上，但在所有其他绘制元素之下
   final ChartLowLayerConfig? chartLowLayerConfig;
+
+  /// Called when a double tap gesture is detected on the chart.
+  /// Provides the quote (price) at the tap position.
+  final OnChartDoubleTapCallback? onDoubleTap;
 
   @override
   State<StatefulWidget> createState() =>

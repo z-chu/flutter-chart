@@ -151,6 +151,7 @@ class _ChartStateMobile extends _ChartState {
                   useDrawingToolsV2: widget.useDrawingToolsV2,
                   enableYAxisScaling: widget.enableYAxisScaling,
                   chartLowLayerConfig: widget.chartLowLayerConfig,
+                  onDoubleTap: widget.onDoubleTap,
                 ),
                 Align(
                   alignment: Alignment.topLeft,

@@ -61,3 +61,14 @@ typedef OnCrosshairTickChangedCallback = void Function(Tick? tick);
 ///
 /// [epoch] is the currently selected tick/candle epoch.
 typedef OnCrosshairTickEpochChangedCallback = void Function(int? epoch);
+
+/// Called when a double tap gesture is detected on the chart.
+///
+/// [localPosition] is the position of the tap in local coordinates.
+/// [quote] is the price value at the tap position.
+/// [epoch] is the epoch value at the tap position.
+typedef OnChartDoubleTapCallback = void Function(
+  Offset localPosition,
+  double quote,
+  int epoch,
+);
