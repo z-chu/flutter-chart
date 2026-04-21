@@ -49,6 +49,11 @@ class HorizontalBarrierPainter<T extends HorizontalBarrier>
       return;
     }
 
+    // 隐藏 barrier：仅参与 Y 轴范围计算，不绘制任何内容
+    if (series.hidden) {
+      return;
+    }
+
     final HorizontalBarrierStyle style =
         series.style as HorizontalBarrierStyle? ?? theme.horizontalBarrierStyle;
 

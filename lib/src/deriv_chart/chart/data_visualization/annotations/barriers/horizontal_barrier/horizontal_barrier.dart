@@ -17,6 +17,7 @@ class HorizontalBarrier extends Barrier {
     bool longLine = true,
     HorizontalBarrierStyle? style,
     this.visibility = HorizontalBarrierVisibility.keepBarrierLabelVisible,
+    this.hidden = false,
   }) : super(
           id: id,
           title: title,
@@ -28,6 +29,15 @@ class HorizontalBarrier extends Barrier {
 
   /// Barrier visibility behavior.
   final HorizontalBarrierVisibility visibility;
+
+  /// When `true`, the barrier is not painted (no line, label, dot, title, or
+  /// arrow), but still participates in Y-Axis range calculation when
+  /// [visibility] is [HorizontalBarrierVisibility.forceToStayOnRange].
+  ///
+  /// Useful as a pure "Y-axis anchor" so that external quotes (e.g. an opened
+  /// position's entry price rendered as a marker) can force the chart to keep
+  /// them inside the visible Y range without drawing an extra line.
+  final bool hidden;
 
   @override
   SeriesPainter<Series> createPainter() =>
