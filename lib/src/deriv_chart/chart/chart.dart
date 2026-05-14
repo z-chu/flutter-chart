@@ -5,6 +5,7 @@ import 'package:deriv_chart/src/deriv_chart/chart/mobile_chart_frame_dividers.da
 import 'package:deriv_chart/src/deriv_chart/chart/x_axis/x_axis_model.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/x_axis/x_axis_wrapper.dart';
 import 'package:deriv_chart/src/deriv_chart/drawing_tool_chart/drawing_tools.dart';
+import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_builder.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_variant.dart';
 import 'package:deriv_chart/src/misc/callbacks.dart';
 import 'package:deriv_chart/src/models/chart_axis_config.dart';
@@ -86,8 +87,18 @@ class Chart extends StatefulWidget {
     this.enableYAxisScaling = true,
     this.chartLowLayerConfig,
     this.onDoubleTap,
+    this.crosshairBuilder,
     Key? key,
   }) : super(key: key);
+
+  /// Optional builder that replaces the default crosshair details (tooltip)
+  /// content shown on long-press / hover.
+  ///
+  /// When `null`, the chart shows the default `CrosshairDetails` (percentage
+  /// header + price + time). When non-null, the returned widget is rendered
+  /// inside the same positioning wrapper used by the default tooltip — so the
+  /// builder only needs to describe the box itself.
+  final CrosshairBuilder? crosshairBuilder;
 
   /// Whether to use new drawing tools or not.
   final bool useDrawingToolsV2;

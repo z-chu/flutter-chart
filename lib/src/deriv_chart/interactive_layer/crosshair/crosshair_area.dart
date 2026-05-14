@@ -11,6 +11,7 @@ import 'package:deriv_chart/src/theme/chart_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'crosshair_builder.dart';
 import 'crosshair_details.dart';
 
 /// A widget that displays crosshair details on a chart.
@@ -31,8 +32,15 @@ class CrosshairArea extends StatelessWidget {
     required this.isTickWithinDataRange,
     required this.updateAndFindClosestTick,
     this.pipSize = 4,
+    this.crosshairBuilder,
     Key? key,
   }) : super(key: key);
+
+  /// Optional builder that replaces the default `CrosshairDetails` content.
+  ///
+  /// The returned widget is rendered inside the same positioning wrapper used
+  /// by the default details (so callers only need to describe the box itself).
+  final CrosshairBuilder? crosshairBuilder;
 
   /// The main series of the chart.
   final DataSeries<Tick> mainSeries;
@@ -211,12 +219,7 @@ class CrosshairArea extends StatelessWidget {
         left: xAxis.xFromEpoch(tick!.epoch) - constraints.maxWidth / 2,
         child: Align(
           alignment: Alignment.topCenter,
-          child: CrosshairDetails(
-            mainSeries: mainSeries,
-            crosshairTick: tick,
-            pipSize: pipSize,
-            crosshairVariant: crosshairVariant,
-          ),
+          child: _buildDetailsContent(tick),
         ),
       );
     }
@@ -243,14 +246,29 @@ class CrosshairArea extends StatelessWidget {
       right: isTickOnRightSide ? null : 16 + rightPadding,
       child: Align(
         alignment: isTickOnRightSide ? Alignment.topLeft : Alignment.topRight,
-        child: CrosshairDetails(
-          mainSeries: mainSeries,
-          crosshairTick: tick,
-          pipSize: pipSize,
-          crosshairVariant: crosshairVariant,
-        ),
+        child: _buildDetailsContent(tick),
       ),
     );
+  }
+
+  /// Renders the content of the details box, delegating to [crosshairBuilder]
+  /// when provided and falling back to the default [CrosshairDetails].
+  Widget _buildDetailsContent(Tick? tick) {
+    if (tick == null) {
+      return const SizedBox.shrink();
+    }
+    return Builder(builder: (BuildContext context) {
+      final Widget? custom = crosshairBuilder?.call(context, tick, pipSize);
+      if (custom != null) {
+        return custom;
+      }
+      return CrosshairDetails(
+        mainSeries: mainSeries,
+        crosshairTick: tick,
+        pipSize: pipSize,
+        crosshairVariant: crosshairVariant,
+      );
+    });
   }
 
   /// Builds a widget that highlights the current tick at the crosshair position.

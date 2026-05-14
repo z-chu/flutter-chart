@@ -2,6 +2,7 @@ import 'package:collection/collection.dart' show IterableExtension;
 import 'package:deriv_chart/src/add_ons/drawing_tools_ui/drawing_tool_config.dart';
 import 'package:deriv_chart/src/add_ons/repository.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/models/chart_scale_model.dart';
+import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_builder.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_controller.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_variant.dart';
 import 'package:deriv_chart/src/misc/chart_controller.dart';
@@ -77,6 +78,7 @@ class MainChart extends BasicChart {
     this.useDrawingToolsV2 = false,
     super.chartLowLayerConfig,
     this.onDoubleTap,
+    this.crosshairBuilder,
   })  : _mainSeries = mainSeries,
         chartDataList = <ChartData>[
           mainSeries,
@@ -167,6 +169,9 @@ class MainChart extends BasicChart {
 
   /// Called when a double tap gesture is detected on the chart.
   final OnChartDoubleTapCallback? onDoubleTap;
+
+  /// Optional builder that replaces the default crosshair details content.
+  final CrosshairBuilder? crosshairBuilder;
 
   @override
   _ChartImplementationState createState() => _ChartImplementationState();
@@ -623,6 +628,7 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
             crosshairVariant: widget.crosshairVariant,
             crosshairZoomOutAnimation: crosshairZoomOutAnimation,
             pipSize: widget.pipSize,
+            crosshairBuilder: widget.crosshairBuilder,
           );
         },
       );

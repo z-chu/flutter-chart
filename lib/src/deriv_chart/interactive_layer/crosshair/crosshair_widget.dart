@@ -1,5 +1,6 @@
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_series/data_series.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_area.dart';
+import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_builder.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_variant.dart';
 import 'package:deriv_chart/src/models/tick.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +18,12 @@ class CrosshairWidget extends StatelessWidget {
     required this.crosshairZoomOutAnimation,
     required this.crosshairVariant,
     this.showCrosshair = true,
+    this.crosshairBuilder,
     super.key,
   });
+
+  /// Optional builder that replaces the default crosshair details content.
+  final CrosshairBuilder? crosshairBuilder;
 
   /// The main data series of the chart.
   final DataSeries<Tick> mainSeries;
@@ -80,6 +85,7 @@ class CrosshairWidget extends StatelessWidget {
                   isTickWithinDataRange: state.isTickWithinDataRange,
                   updateAndFindClosestTick:
                       crosshairController.updateAndFindClosestTick,
+                  crosshairBuilder: crosshairBuilder,
                 ),
               ),
             );

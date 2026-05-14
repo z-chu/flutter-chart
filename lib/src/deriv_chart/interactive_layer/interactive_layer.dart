@@ -7,6 +7,7 @@ import 'package:deriv_chart/src/add_ons/repository.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/multiple_animated_builder.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/x_axis/x_axis_model.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/y_axis/y_axis_config.dart';
+import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_builder.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_controller.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_variant.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_widget.dart';
@@ -74,8 +75,12 @@ class InteractiveLayer extends StatefulWidget {
     this.pipSize = 4,
     this.onCrosshairAppeared,
     this.onCrosshairDisappeared,
+    this.crosshairBuilder,
     super.key,
   });
+
+  /// Optional builder that replaces the default crosshair details content.
+  final CrosshairBuilder? crosshairBuilder;
 
   /// Interactive layer behaviour which defines how interactive layer should
   /// behave in scenarios like adding/dragging, etc.
@@ -269,6 +274,7 @@ class _InteractiveLayerState extends State<InteractiveLayer> {
       onCrosshairDisappeared: widget.onCrosshairDisappeared,
       crosshairController: widget.crosshairController,
       crosshairVariant: widget.crosshairVariant,
+      crosshairBuilder: widget.crosshairBuilder,
     );
   }
 }
@@ -296,7 +302,10 @@ class _InteractiveLayerGestureHandler extends StatefulWidget {
     this.pipSize = 4,
     this.onCrosshairAppeared,
     this.onCrosshairDisappeared,
+    this.crosshairBuilder,
   });
+
+  final CrosshairBuilder? crosshairBuilder;
 
   final List<InteractableDrawing> drawings;
 
@@ -608,6 +617,7 @@ class _InteractiveLayerGestureHandlerState
                               widget.crosshairZoomOutAnimation,
                           crosshairVariant: widget.crosshairVariant,
                           showCrosshair: widget.showCrosshair,
+                          crosshairBuilder: widget.crosshairBuilder,
                         ),
                         ...widget.interactiveLayerBehaviour.previewWidgets,
                       ],

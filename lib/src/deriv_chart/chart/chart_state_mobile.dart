@@ -152,6 +152,7 @@ class _ChartStateMobile extends _ChartState {
                   enableYAxisScaling: widget.enableYAxisScaling,
                   chartLowLayerConfig: widget.chartLowLayerConfig,
                   onDoubleTap: widget.onDoubleTap,
+                  crosshairBuilder: widget.crosshairBuilder,
                 ),
                 Align(
                   alignment: Alignment.topLeft,

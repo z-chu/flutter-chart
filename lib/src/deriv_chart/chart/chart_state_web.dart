@@ -56,6 +56,7 @@ class _ChartStateWeb extends _ChartState {
             enableYAxisScaling: widget.enableYAxisScaling,
             chartLowLayerConfig: widget.chartLowLayerConfig,
             onDoubleTap: widget.onDoubleTap,
+            crosshairBuilder: widget.crosshairBuilder,
           ),
         ),
         if (bottomSeries?.isNotEmpty ?? false)
