@@ -33,6 +33,7 @@ class CrosshairArea extends StatelessWidget {
     required this.updateAndFindClosestTick,
     this.pipSize = 4,
     this.crosshairBuilder,
+    this.quoteLabelFormatter,
     Key? key,
   }) : super(key: key);
 
@@ -41,6 +42,10 @@ class CrosshairArea extends StatelessWidget {
   /// The returned widget is rendered inside the same positioning wrapper used
   /// by the default details (so callers only need to describe the box itself).
   final CrosshairBuilder? crosshairBuilder;
+
+  /// Optional formatter for the quote value shown on the right-side axis label
+  /// (largeScreen variant). Falls back to `toStringAsFixed(pipSize)` when null.
+  final String Function(double)? quoteLabelFormatter;
 
   /// The main series of the chart.
   final DataSeries<Tick> mainSeries;
@@ -163,7 +168,9 @@ class CrosshairArea extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  quoteFromCanvasY(cursorPosition.dy).toStringAsFixed(pipSize),
+                  quoteLabelFormatter?.call(quoteFromCanvasY(cursorPosition.dy)) ??
+                      quoteFromCanvasY(cursorPosition.dy)
+                          .toStringAsFixed(pipSize),
                   style: theme.crosshairAxisLabelStyle.copyWith(
                     color: theme.crosshairInformationBoxTextDefault,
                   ),

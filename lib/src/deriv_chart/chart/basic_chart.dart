@@ -37,6 +37,7 @@ class BasicChart extends StatefulWidget {
     this.quoteBoundsAnimationDuration = _defaultDuration,
     this.enableYAxisScaling = true,
     this.chartLowLayerConfig,
+    this.quoteLabelFormatter,
   })  : chartAxisConfig = chartAxisConfig ?? const ChartAxisConfig(),
         super(key: key);
 
@@ -68,6 +69,9 @@ class BasicChart extends StatefulWidget {
   /// 磨砂背景配置，用于在图表数据下方绘制磨砂背景区域
   /// 背景绘制在网格线之上，但在所有其他绘制元素之下
   final ChartLowLayerConfig? chartLowLayerConfig;
+
+  /// 可选：Y 轴 quote label 格式化（如概率 0–1 → '48%'）；透传到网格 label painter。
+  final String Function(double)? quoteLabelFormatter;
 
   @override
   BasicChartState<BasicChart> createState() => BasicChartState<BasicChart>();
@@ -504,12 +508,14 @@ class BasicChartState<T extends BasicChart> extends State<T>
                     pipSize: widget.pipSize,
                     quoteToCanvasY: chartQuoteToCanvasY,
                     style: context.watch<ChartTheme>().gridStyle,
+                    quoteLabelFormatter: widget.quoteLabelFormatter,
                   )
                 : YGridLabelPainter(
                     gridLineQuotes: gridLineQuotes,
                     pipSize: widget.pipSize,
                     quoteToCanvasY: chartQuoteToCanvasY,
                     style: context.watch<ChartTheme>().gridStyle,
+                    quoteLabelFormatter: widget.quoteLabelFormatter,
                   ),
           ),
         ),

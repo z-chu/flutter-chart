@@ -27,6 +27,7 @@ class _ChartStateWeb extends _ChartState {
             annotations: widget.annotations,
             markerSeries: widget.markerSeries,
             pipSize: widget.pipSize,
+            quoteLabelFormatter: widget.quoteLabelFormatter,
             onCrosshairAppeared: widget.onCrosshairAppeared,
             onQuoteAreaChanged: widget.onQuoteAreaChanged,
             isLive: widget.isLive,

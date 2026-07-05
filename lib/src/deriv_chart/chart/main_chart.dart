@@ -77,6 +77,7 @@ class MainChart extends BasicChart {
     this.interactiveLayerBehaviour,
     this.useDrawingToolsV2 = false,
     super.chartLowLayerConfig,
+    super.quoteLabelFormatter,
     this.onDoubleTap,
     this.crosshairBuilder,
   })  : _mainSeries = mainSeries,
@@ -629,6 +630,7 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
             crosshairZoomOutAnimation: crosshairZoomOutAnimation,
             pipSize: widget.pipSize,
             crosshairBuilder: widget.crosshairBuilder,
+            quoteLabelFormatter: widget.quoteLabelFormatter,
           );
         },
       );

@@ -10,6 +10,7 @@ class YGridLabelPainter extends CustomPainter {
     required this.pipSize,
     required this.quoteToCanvasY,
     required this.style,
+    this.quoteLabelFormatter,
   });
 
   /// Number of digits after decimal point in price.
@@ -25,6 +26,10 @@ class YGridLabelPainter extends CustomPainter {
 
   final GridStyle style;
 
+  /// 可选：把 quote 值格式化成 Y 轴 label 文本（如概率 0–1 映射为 '48%'）。
+  /// null 时回退到 quote.toStringAsFixed(pipSize) 的默认数字格式。
+  final String Function(double)? quoteLabelFormatter;
+
   @override
   void paint(Canvas canvas, Size size) {
     for (final double quote in gridLineQuotes) {
@@ -32,7 +37,7 @@ class YGridLabelPainter extends CustomPainter {
 
       paintText(
         canvas,
-        text: quote.toStringAsFixed(pipSize),
+        text: quoteLabelFormatter?.call(quote) ?? quote.toStringAsFixed(pipSize),
         style: style.yLabelStyle,
         anchor: Offset(size.width - style.labelHorizontalPadding, y),
         anchorAlignment: Alignment.centerRight,

@@ -76,11 +76,15 @@ class InteractiveLayer extends StatefulWidget {
     this.onCrosshairAppeared,
     this.onCrosshairDisappeared,
     this.crosshairBuilder,
+    this.quoteLabelFormatter,
     super.key,
   });
 
   /// Optional builder that replaces the default crosshair details content.
   final CrosshairBuilder? crosshairBuilder;
+
+  /// Optional formatter for the right-side axis quote label (largeScreen).
+  final String Function(double)? quoteLabelFormatter;
 
   /// Interactive layer behaviour which defines how interactive layer should
   /// behave in scenarios like adding/dragging, etc.
@@ -275,6 +279,7 @@ class _InteractiveLayerState extends State<InteractiveLayer> {
       crosshairController: widget.crosshairController,
       crosshairVariant: widget.crosshairVariant,
       crosshairBuilder: widget.crosshairBuilder,
+      quoteLabelFormatter: widget.quoteLabelFormatter,
     );
   }
 }
@@ -303,9 +308,13 @@ class _InteractiveLayerGestureHandler extends StatefulWidget {
     this.onCrosshairAppeared,
     this.onCrosshairDisappeared,
     this.crosshairBuilder,
+    this.quoteLabelFormatter,
   });
 
   final CrosshairBuilder? crosshairBuilder;
+
+  /// Optional formatter for the right-side axis quote label (largeScreen).
+  final String Function(double)? quoteLabelFormatter;
 
   final List<InteractableDrawing> drawings;
 
@@ -618,6 +627,7 @@ class _InteractiveLayerGestureHandlerState
                           crosshairVariant: widget.crosshairVariant,
                           showCrosshair: widget.showCrosshair,
                           crosshairBuilder: widget.crosshairBuilder,
+                          quoteLabelFormatter: widget.quoteLabelFormatter,
                         ),
                         ...widget.interactiveLayerBehaviour.previewWidgets,
                       ],

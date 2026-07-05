@@ -88,6 +88,7 @@ class Chart extends StatefulWidget {
     this.chartLowLayerConfig,
     this.onDoubleTap,
     this.crosshairBuilder,
+    this.quoteLabelFormatter,
     Key? key,
   }) : super(key: key);
 
@@ -99,6 +100,9 @@ class Chart extends StatefulWidget {
   /// inside the same positioning wrapper used by the default tooltip — so the
   /// builder only needs to describe the box itself.
   final CrosshairBuilder? crosshairBuilder;
+
+  /// 可选：Y 轴 quote label 格式化（如概率 0–1 → '48%'）；透传到网格 label painter。
+  final String Function(double)? quoteLabelFormatter;
 
   /// Whether to use new drawing tools or not.
   final bool useDrawingToolsV2;

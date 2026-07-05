@@ -19,11 +19,15 @@ class CrosshairWidget extends StatelessWidget {
     required this.crosshairVariant,
     this.showCrosshair = true,
     this.crosshairBuilder,
+    this.quoteLabelFormatter,
     super.key,
   });
 
   /// Optional builder that replaces the default crosshair details content.
   final CrosshairBuilder? crosshairBuilder;
+
+  /// Optional formatter for the right-side axis quote label (largeScreen).
+  final String Function(double)? quoteLabelFormatter;
 
   /// The main data series of the chart.
   final DataSeries<Tick> mainSeries;
@@ -86,6 +90,7 @@ class CrosshairWidget extends StatelessWidget {
                   updateAndFindClosestTick:
                       crosshairController.updateAndFindClosestTick,
                   crosshairBuilder: crosshairBuilder,
+                  quoteLabelFormatter: quoteLabelFormatter,
                 ),
               ),
             );
