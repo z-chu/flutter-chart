@@ -256,9 +256,14 @@ class _ChartStateMobile extends _ChartState {
       }
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: overlayIndicatorsLabels,
+    // Scrollable so a tall stack of labels (e.g. several MA overlays) clips
+    // and scrolls within the main pane instead of overflowing it.
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: overlayIndicatorsLabels,
+      ),
     );
   }
 }
