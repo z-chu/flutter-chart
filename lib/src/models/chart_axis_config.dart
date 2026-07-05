@@ -24,6 +24,7 @@ class ChartAxisConfig {
     this.showEpochGrid = true,
     this.showFrame = false,
     this.smoothScrolling = true,
+    this.rollingWindowData = false,
   });
 
   /// Top quote bound target for animated transition.
@@ -64,6 +65,20 @@ class ChartAxisConfig {
   ///
   /// Default is `true`.
   final bool smoothScrolling;
+
+  /// Set to `true` when the chart's data is a fixed-size rolling window that
+  /// drops its oldest tick whenever a new one arrives (so the first AND last
+  /// entry epoch both change on every update).
+  ///
+  /// The chart normally auto-scrolls to the live edge when both the first and
+  /// last epoch change, treating it as a market/granularity switch. For a
+  /// rolling-window feed that heuristic mis-fires on every tick and resets the
+  /// view to live ~every second, making it impossible to browse history. When
+  /// this flag is `true`, that auto-reset is skipped; such charts are expected
+  /// to reset to live via their own market/round-change handling.
+  ///
+  /// When `false` (default), existing charts keep the original behavior.
+  final bool rollingWindowData;
 
   /// Creates a copy of this ChartAxisConfig but with the given fields replaced.
   ChartAxisConfig copyWith({

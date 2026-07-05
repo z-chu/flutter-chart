@@ -473,8 +473,16 @@ abstract class _ChartState extends State<Chart> with WidgetsBindingObserver {
     }
 
     //check if entire entries changes(market or granularity changes)
-    // scroll to last tick
-    if (widget.mainSeries.input.isNotEmpty &&
+    // scroll to last tick.
+    //
+    // Skipped for rolling-window feeds (see [ChartAxisConfig.rollingWindowData],
+    // e.g. Polymarket): they drop the oldest tick on every update, so the first
+    // AND last epoch both change every tick — which would otherwise reset the
+    // view to the live edge ~every second and make it impossible to browse
+    // history. Such charts reset to live via their own market/round change
+    // handling instead.
+    if (!widget.chartAxisConfig.rollingWindowData &&
+        widget.mainSeries.input.isNotEmpty &&
         oldWidget.mainSeries.input.isNotEmpty) {
       final bool firstChanged = widget.mainSeries.input.first.epoch !=
           oldWidget.mainSeries.input.first.epoch;
