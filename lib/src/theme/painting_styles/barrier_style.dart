@@ -19,10 +19,15 @@ abstract class BarrierStyle extends ChartPaintingStyle {
       color: Colors.white,
       fontFeatures: <FontFeature>[FontFeature.tabularFigures()],
     ),
+    this.valueFormatter,
   });
 
   /// Color of the barrier.
   final Color color;
+
+  /// 可选：把 barrier 的 value 格式化成 label 文本（如概率 0–1 → '48%'）。
+  /// null 时回退到 value.toStringAsFixed(pipSize) 的默认数字格式。
+  final String Function(double)? valueFormatter;
 
   /// Style of the title and value.
   final TextStyle textStyle;
@@ -68,6 +73,7 @@ class HorizontalBarrierStyle extends BarrierStyle {
     Color? blinkingDotColor,
     this.arrowSize = 5,
     this.hasArrow = true,
+    this.arrowColor,
     this.hasLine = true,
     this.labelShapeBackgroundColor = const Color(0xFF000000),
     this.lineColor = const Color(0xFF000000),
@@ -78,6 +84,7 @@ class HorizontalBarrierStyle extends BarrierStyle {
       color: Colors.white,
       fontFeatures: <FontFeature>[FontFeature.tabularFigures()],
     ),
+    String Function(double)? valueFormatter,
   })  : blinkingDotColor = blinkingDotColor ?? color,
         super(
           color: color,
@@ -87,6 +94,7 @@ class HorizontalBarrierStyle extends BarrierStyle {
           dashSpace: dashSpace,
           thickness: thickness,
           textStyle: textStyle,
+          valueFormatter: valueFormatter,
         );
 
   /// Label shape.
@@ -127,6 +135,10 @@ class HorizontalBarrierStyle extends BarrierStyle {
   /// `HorizontalBarrierVisibility.keepBarrierLabelVisible`.
   final bool hasArrow;
 
+  /// 越界方向箭头的颜色。为 null 时回退到 [labelShapeBackgroundColor]（保持原有
+  /// 行为）。当箭头需要比标签底色更醒目时单独指定（底色深 / 与背景接近会看不清）。
+  final Color? arrowColor;
+
   /// Whether to draw a horizontal line to the current tick from the y-axis
   /// grid to the
   final bool hasLine;
@@ -159,6 +171,7 @@ class HorizontalBarrierStyle extends BarrierStyle {
     Color? blinkingDotColor,
     double? arrowSize,
     bool? hasArrow,
+    Color? arrowColor,
     bool? hasLine,
     Color? labelShapeBackgroundColor,
     Color? lineColor,
@@ -181,6 +194,7 @@ class HorizontalBarrierStyle extends BarrierStyle {
         blinkingDotColor: blinkingDotColor ?? this.blinkingDotColor,
         arrowSize: arrowSize ?? this.arrowSize,
         hasArrow: hasArrow ?? this.hasArrow,
+        arrowColor: arrowColor ?? this.arrowColor,
         hasLine: hasLine ?? this.hasLine,
         textStyle: textStyle.copyWith(),
         labelShapeBackgroundColor:

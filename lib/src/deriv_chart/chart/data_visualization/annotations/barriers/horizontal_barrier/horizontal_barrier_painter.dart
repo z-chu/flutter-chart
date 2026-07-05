@@ -142,7 +142,8 @@ class HorizontalBarrierPainter<T extends HorizontalBarrier>
     }
 
     final TextPainter valuePainter = makeTextPainter(
-      animatedValue.toStringAsFixed(chartConfig.pipSize),
+      style.valueFormatter?.call(animatedValue) ??
+          animatedValue.toStringAsFixed(chartConfig.pipSize),
       style.textStyle,
     );
 
@@ -225,6 +226,10 @@ class HorizontalBarrierPainter<T extends HorizontalBarrier>
 
     // Arrows.
     if (style.hasArrow) {
+      // 箭头颜色：优先用 style.arrowColor；为 null 时回退到 label 底色（保持原有
+      // 行为）。注意上面 paintLabelBackground 已把 _paint.color 改成了 label 底色，
+      // 这里显式覆盖，避免箭头默认继承底色而在深色背景上看不清。
+      _paint.color = style.arrowColor ?? style.labelShapeBackgroundColor;
       final double arrowMidX = labelArea.left - style.arrowSize - 6;
       if (arrowType == BarrierArrowType.upward) {
         _paintUpwardArrows(
