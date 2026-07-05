@@ -89,6 +89,7 @@ class Chart extends StatefulWidget {
     this.onDoubleTap,
     this.crosshairBuilder,
     this.quoteLabelFormatter,
+    this.showIndicatorLabels = true,
     Key? key,
   }) : super(key: key);
 
@@ -249,6 +250,13 @@ class Chart extends StatefulWidget {
   /// Called when a double tap gesture is detected on the chart.
   /// Provides the quote (price) at the tap position.
   final OnChartDoubleTapCallback? onDoubleTap;
+
+  /// Whether to render the library's built-in indicator label chips (the
+  /// top-left overlay labels and the bottom-pane titles with the eye/move
+  /// icons). Defaults to `true` (unchanged library behaviour). Set to `false`
+  /// to keep the chart clean when indicator management lives outside the chart
+  /// (e.g. Polymarket manages indicators via its own sheets).
+  final bool showIndicatorLabels;
 
   @override
   State<StatefulWidget> createState() =>

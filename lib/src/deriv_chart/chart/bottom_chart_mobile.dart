@@ -31,6 +31,7 @@ class BottomChartMobile extends BasicChart {
     this.showMoveUpIcon = false,
     this.showMoveDownIcon = false,
     this.bottomChartTitleMargin,
+    this.showIndicatorLabels = true,
     super.currentTickAnimationDuration,
     super.quoteBoundsAnimationDuration,
   }) : super(key: key, mainSeries: series, pipSize: pipSize);
@@ -62,6 +63,10 @@ class BottomChartMobile extends BasicChart {
 
   /// Whether to show the frame or not.
   final bool showFrame;
+
+  /// Whether to render the built-in indicator label chip (title + eye/move
+  /// icons). Defaults to `true`; set `false` to keep the pane clean.
+  final bool showIndicatorLabels;
 
   @override
   _BottomChartMobileState createState() => _BottomChartMobileState();
@@ -141,14 +146,16 @@ class _BottomChartMobileState extends BasicChartState<BottomChartMobile> {
         ),
       );
 
-  Widget _buildIndicatorLabelMobile() => IndicatorLabelMobile(
-        title: widget.title,
-        showMoveUpIcon: widget.showMoveUpIcon,
-        showMoveDownIcon: widget.showMoveDownIcon,
-        isHidden: widget.isHidden,
-        onHideUnhideToggle: widget.onHideUnhideToggle,
-        onSwap: widget.onSwap,
-      );
+  Widget _buildIndicatorLabelMobile() => widget.showIndicatorLabels
+      ? IndicatorLabelMobile(
+          title: widget.title,
+          showMoveUpIcon: widget.showMoveUpIcon,
+          showMoveDownIcon: widget.showMoveDownIcon,
+          isHidden: widget.isHidden,
+          onHideUnhideToggle: widget.onHideUnhideToggle,
+          onSwap: widget.onSwap,
+        )
+      : const SizedBox.shrink();
 
   Widget _buildDivider() => const Divider(
         height: 0.5,

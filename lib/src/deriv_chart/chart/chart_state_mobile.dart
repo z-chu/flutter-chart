@@ -74,6 +74,7 @@ class _ChartStateMobile extends _ChartState {
             showMoveDownIcon: bottomSeries.length > 1 &&
                 indexInBottomConfigs != bottomSeries.length - 1,
             showFrame: context.read<ChartConfig>().chartAxisConfig.showFrame,
+            showIndicatorLabels: widget.showIndicatorLabels,
           );
 
           return (repository?.getHiddenStatus(index) ?? false)
@@ -230,6 +231,10 @@ class _ChartStateMobile extends _ChartState {
   }
 
   Widget _buildOverlayIndicatorsLabels() {
+    // 外部关闭库自带 label chip（如 PM 用自有弹窗管理指标）时不渲染。
+    if (!widget.showIndicatorLabels) {
+      return const SizedBox.shrink();
+    }
     final List<Widget> overlayIndicatorsLabels = <Widget>[];
     if (widget.indicatorsRepo != null) {
       for (int i = 0; i < widget.indicatorsRepo!.items.length; i++) {
