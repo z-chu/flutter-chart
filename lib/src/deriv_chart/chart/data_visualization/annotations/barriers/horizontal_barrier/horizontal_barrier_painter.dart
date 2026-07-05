@@ -110,6 +110,28 @@ class HorizontalBarrierPainter<T extends HorizontalBarrier>
       }
     }
 
+    // 标签防重叠：参考线 / 脉冲点仍画在真实价位 `y`，仅把 label（标题 + 数字）挪到
+    // `labelY`。当本 barrier 设了 [HorizontalBarrier.avoidLabelOverlapWithQuote]
+    // 且其 label 会与对方价位的 label 在 Y 轴上叠到一起时，按价格大小把本 label 推到
+    // 对方上 / 下方（本值 ≥ 对方 → 上方，否则下方；相等走上方）。对方保持原位，本
+    // barrier 让位（典型：当前价 / Final 给固定的 P2B 让位）。被推到边缘时贴边显示。
+    double labelY = y;
+    final double? avoidQuote = series.avoidLabelOverlapWithQuote;
+    if (avoidQuote != null && arrowType == BarrierArrowType.none) {
+      final double otherY = quoteToY(avoidQuote);
+      // 两 label 中心至少相距一个 label 高度才不重叠（两侧等高，取本侧高度近似）。
+      final double minGap = style.labelHeight;
+      if ((labelY - otherY).abs() < minGap) {
+        labelY = animatedValue >= avoidQuote
+            ? otherY - minGap // 本值更高 → 屏幕更上方（y 更小）
+            : otherY + minGap;
+        // 推开后仍夹在可视区内，避免越过上 / 下边缘画到屏幕外。
+        final double labelHalfHeight = style.labelHeight / 2;
+        labelY = labelY.clamp(labelHalfHeight, size.height - labelHalfHeight);
+      }
+    }
+    final bool labelNudged = labelY != y;
+
     // Blinking dot.
     if (style.hasBlinkingDot && dotX != null) {
       // to hide the blinking spot on yAxis
@@ -134,7 +156,8 @@ class HorizontalBarrierPainter<T extends HorizontalBarrier>
         : textWidthWithPadding;
 
     final Rect labelArea = Rect.fromCenter(
-      center: Offset(size.width - style.rightMargin - actualLabelWidth / 2, y),
+      center:
+          Offset(size.width - style.rightMargin - actualLabelWidth / 2, labelY),
       width: actualLabelWidth,
       height: style.labelHeight,
     );
@@ -149,8 +172,9 @@ class HorizontalBarrierPainter<T extends HorizontalBarrier>
       final double titleEndX = labelArea.left - _distanceBetweenTitleAndLabel;
       final double titleAreaWidth =
           titlePainter.width + _titleHorizontalPadding * 2;
+      // 标题跟随 label 一起挪到 labelY（让 'P' / 'F' 不会和对方 label 撞在一起）。
       titleArea = Rect.fromCenter(
-        center: Offset(titleEndX - titleAreaWidth / 2, y),
+        center: Offset(titleEndX - titleAreaWidth / 2, labelY),
         width: titleAreaWidth,
         height: titlePainter.height,
       );
@@ -170,7 +194,9 @@ class HorizontalBarrierPainter<T extends HorizontalBarrier>
       final double lineEndX = labelArea.left;
 
       if (lineStartX < lineEndX) {
-        if (titleArea != null) {
+        // label 被挪开时标题已不在线上（线在真实价位 y、标题在 labelY），不再断开
+        // 让位，直接画整条线；未挪开时仍在标题处留缺口避免压字。
+        if (titleArea != null && !labelNudged) {
           // Draw line in two segments - before and after the title
           // First segment: from lineStartX to left of title
           if (lineStartX < titleArea.left) {

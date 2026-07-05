@@ -21,6 +21,7 @@ class TickIndicator extends HorizontalBarrier {
     HorizontalBarrierStyle? style,
     HorizontalBarrierVisibility visibility = HorizontalBarrierVisibility.normal,
     bool longLine = false,
+    double? avoidLabelOverlapWithQuote,
   }) : super(
           tick.quote,
           epoch: tick.epoch,
@@ -29,6 +30,7 @@ class TickIndicator extends HorizontalBarrier {
               const HorizontalBarrierStyle(labelShape: LabelShape.pentagon),
           visibility: visibility,
           longLine: longLine,
+          avoidLabelOverlapWithQuote: avoidLabelOverlapWithQuote,
         );
 }
 
@@ -46,6 +48,7 @@ class CandleIndicator extends HorizontalBarrier {
     HorizontalBarrierVisibility visibility =
         HorizontalBarrierVisibility.keepBarrierLabelVisible,
     bool longLine = false,
+    double? avoidLabelOverlapWithQuote,
   }) : super(
           candle.quote,
           epoch: candle.epoch,
@@ -53,6 +56,7 @@ class CandleIndicator extends HorizontalBarrier {
           style: style,
           visibility: visibility,
           longLine: longLine,
+          avoidLabelOverlapWithQuote: avoidLabelOverlapWithQuote,
         ) {
     _startTimer();
   }
