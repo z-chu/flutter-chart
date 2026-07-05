@@ -130,6 +130,7 @@ export 'src/models/tick.dart';
 export 'src/theme/chart_default_dark_theme.dart';
 export 'src/theme/chart_default_light_theme.dart';
 export 'src/theme/chart_theme.dart';
+export 'src/theme/painting_styles/bar_style.dart';
 export 'src/theme/painting_styles/barrier_style.dart';
 export 'src/theme/painting_styles/candle_style.dart';
 export 'src/theme/painting_styles/entry_exit_marker_style.dart';
