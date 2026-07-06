@@ -31,6 +31,9 @@ StochasticOscillatorIndicatorConfig
               ? const LineStyle(color: Colors.red)
               : LineStyle.fromJson(
                   json['slowLineStyle'] as Map<String, dynamic>),
+          jLineStyle: json['jLineStyle'] == null
+              ? null
+              : LineStyle.fromJson(json['jLineStyle'] as Map<String, dynamic>),
           pipSize: json['pipSize'] as int? ?? 4,
           showLastIndicator: json['showLastIndicator'] as bool? ?? false,
           title: json['title'] as String?,
@@ -54,4 +57,5 @@ Map<String, dynamic> _$StochasticOscillatorIndicatorConfigToJson(
       'showZones': instance.showZones,
       'fastLineStyle': instance.fastLineStyle,
       'slowLineStyle': instance.slowLineStyle,
+      'jLineStyle': instance.jLineStyle,
     };

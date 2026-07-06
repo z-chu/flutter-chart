@@ -32,6 +32,7 @@ class StochasticOscillatorIndicatorConfig extends IndicatorConfig {
     ),
     this.fastLineStyle = const LineStyle(color: Colors.white),
     this.slowLineStyle = const LineStyle(color: Colors.red),
+    this.jLineStyle,
     int pipSize = 4,
     bool showLastIndicator = false,
     String? title,
@@ -88,6 +89,11 @@ class StochasticOscillatorIndicatorConfig extends IndicatorConfig {
   /// Slow line style.
   final LineStyle slowLineStyle;
 
+  /// %J line style. When null (default) the J line is not rendered — keeps the
+  /// library's original two-line (K/D) behaviour and callers that don't opt in
+  /// unchanged. Provide a style to render a third line J = 3K − 2D.
+  final LineStyle? jLineStyle;
+
   @override
   Series getSeries(IndicatorInput indicatorInput) => StochasticOscillatorSeries(
       IndicatorConfig.supportedFieldTypes[fieldType]!(indicatorInput), this,
@@ -119,6 +125,7 @@ class StochasticOscillatorIndicatorConfig extends IndicatorConfig {
     bool? showZones,
     LineStyle? fastLineStyle,
     LineStyle? slowLineStyle,
+    LineStyle? jLineStyle,
     int? pipSize,
     bool? showLastIndicator,
     String? title,
@@ -136,6 +143,7 @@ class StochasticOscillatorIndicatorConfig extends IndicatorConfig {
         showZones: showZones ?? this.showZones,
         fastLineStyle: fastLineStyle ?? this.fastLineStyle,
         slowLineStyle: slowLineStyle ?? this.slowLineStyle,
+        jLineStyle: jLineStyle ?? this.jLineStyle,
         pipSize: pipSize ?? this.pipSize,
         showLastIndicator: showLastIndicator ?? this.showLastIndicator,
         title: title ?? this.title,

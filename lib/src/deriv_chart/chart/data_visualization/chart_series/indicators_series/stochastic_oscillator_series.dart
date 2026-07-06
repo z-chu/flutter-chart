@@ -34,6 +34,10 @@ class StochasticOscillatorSeries extends Series {
   /// Slow percent StochasticOscillator indicator series.
   late SingleIndicatorSeries slowStochasticIndicatorSeries;
 
+  /// %J line series (J = 3K − 2D). Only built when [config.jLineStyle] is set;
+  /// null keeps the original two-line (K/D) behaviour.
+  SingleIndicatorSeries? jStochasticIndicatorSeries;
+
   ///input data
   final Indicator<Tick> inputIndicator;
 
@@ -129,6 +133,50 @@ class StochasticOscillatorSeries extends Series {
         ),
       );
     }
+
+    // %J = 3K − 2D. Opt-in via jLineStyle; builds its own K/D matching the
+    // displayed smooth/non-smooth path so it never shares mutable cache with
+    // the K/D series above.
+    if (config.jLineStyle != null) {
+      final int period = stochasticOscillatorOptions.period;
+      final CachedIndicator<Tick> kForJ;
+      final CachedIndicator<Tick> dForJ;
+      if (config.isSmooth) {
+        kForJ = SmoothedFastStochasticIndicator<Tick>(
+          FastStochasticIndicator<Tick>.fromIndicator(inputIndicator,
+              period: period),
+          period: period,
+        );
+        dForJ = SmoothedSlowStochasticIndicator<Tick>(
+          SlowStochasticIndicator<Tick>.fromIndicator(
+            FastStochasticIndicator<Tick>.fromIndicator(inputIndicator,
+                period: period),
+          ),
+        );
+      } else {
+        kForJ = FastStochasticIndicator<Tick>.fromIndicator(inputIndicator,
+            period: period);
+        dForJ = SlowStochasticIndicator<Tick>.fromIndicator(
+          FastStochasticIndicator<Tick>.fromIndicator(inputIndicator,
+              period: period),
+        );
+      }
+      // Pre-build once and return the same instance (mirrors K/D above).
+      final _JStochasticIndicator<Tick> jIndicator =
+          _JStochasticIndicator<Tick>(kForJ, dForJ);
+      jStochasticIndicatorSeries = SingleIndicatorSeries(
+        painterCreator: (Series series) =>
+            LinePainter(series as DataSeries<Tick>),
+        indicatorCreator: () => jIndicator,
+        inputIndicator: inputIndicator,
+        options: stochasticOscillatorOptions,
+        style: config.jLineStyle,
+        lastTickIndicatorStyle: getLastIndicatorStyle(
+          config.jLineStyle!.color,
+          showLastIndicator: config.showLastIndicator,
+        ),
+      );
+    }
     return null;
   }
 
@@ -140,26 +188,31 @@ class StochasticOscillatorSeries extends Series {
         .didUpdate(series?.fastPercentStochasticIndicatorSeries);
     final bool _slowUpdated = slowStochasticIndicatorSeries
         .didUpdate(series?.slowStochasticIndicatorSeries);
+    final bool _jUpdated = jStochasticIndicatorSeries
+            ?.didUpdate(series?.jStochasticIndicatorSeries) ??
+        false;
 
-    return _fastUpdated || _slowUpdated;
+    return _fastUpdated || _slowUpdated || _jUpdated;
   }
 
   @override
   void onUpdate(int leftEpoch, int rightEpoch) {
     fastPercentStochasticIndicatorSeries.update(leftEpoch, rightEpoch);
     slowStochasticIndicatorSeries.update(leftEpoch, rightEpoch);
+    jStochasticIndicatorSeries?.update(leftEpoch, rightEpoch);
   }
+
+  /// K/D (+ J when present) sub-series used for range / epoch aggregation.
+  List<ChartData> get _subSeries => <ChartData>[
+        fastPercentStochasticIndicatorSeries,
+        slowStochasticIndicatorSeries,
+        if (jStochasticIndicatorSeries != null) jStochasticIndicatorSeries!,
+      ];
 
   @override
   List<double> recalculateMinMax() => <double>[
-        <ChartData>[
-          fastPercentStochasticIndicatorSeries,
-          slowStochasticIndicatorSeries,
-        ].getMinValue(),
-        <ChartData>[
-          fastPercentStochasticIndicatorSeries,
-          slowStochasticIndicatorSeries,
-        ].getMaxValue()
+        _subSeries.getMinValue(),
+        _subSeries.getMaxValue(),
       ];
 
   @override
@@ -177,17 +230,47 @@ class StochasticOscillatorSeries extends Series {
         animationInfo, chartConfig, theme, chartScaleModel);
     slowStochasticIndicatorSeries.paint(canvas, size, epochToX, quoteToY,
         animationInfo, chartConfig, theme, chartScaleModel);
+    jStochasticIndicatorSeries?.paint(canvas, size, epochToX, quoteToY,
+        animationInfo, chartConfig, theme, chartScaleModel);
   }
 
   @override
-  int? getMaxEpoch() => <ChartData>[
-        fastPercentStochasticIndicatorSeries,
-        slowStochasticIndicatorSeries,
-      ].getMaxEpoch();
+  int? getMaxEpoch() => _subSeries.getMaxEpoch();
 
   @override
-  int? getMinEpoch() => <ChartData>[
-        fastPercentStochasticIndicatorSeries,
-        slowStochasticIndicatorSeries,
-      ].getMinEpoch();
+  int? getMinEpoch() => _subSeries.getMinEpoch();
+}
+
+/// %J line indicator: J = 3·%K − 2·%D. Self-contained — holds its own K/D
+/// indicators (built by the series to match the smooth/non-smooth path) so it
+/// never shares mutable cache with the displayed K/D series.
+class _JStochasticIndicator<T extends IndicatorResult>
+    extends CachedIndicator<T> {
+  /// Initializes from the %K and %D indicators.
+  _JStochasticIndicator(this._kIndicator, this._dIndicator)
+      : super.fromIndicator(_kIndicator);
+
+  final CachedIndicator<T> _kIndicator;
+  final CachedIndicator<T> _dIndicator;
+
+  @override
+  T calculate(int index) => createResult(
+        index: index,
+        quote: 3 * _kIndicator.getValue(index).quote -
+            2 * _dIndicator.getValue(index).quote,
+      );
+
+  @override
+  void copyValuesFrom(covariant _JStochasticIndicator<T> other) {
+    super.copyValuesFrom(other);
+    _kIndicator.copyValuesFrom(other._kIndicator);
+    _dIndicator.copyValuesFrom(other._dIndicator);
+  }
+
+  @override
+  void invalidate(int index) {
+    _kIndicator.invalidate(index);
+    _dIndicator.invalidate(index);
+    super.invalidate(index);
+  }
 }
