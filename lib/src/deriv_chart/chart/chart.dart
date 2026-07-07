@@ -41,6 +41,16 @@ part 'chart_state_web.dart';
 
 const Duration _defaultDuration = Duration(milliseconds: 300);
 
+/// Builds a custom legend widget rendered at the top-left of a bottom
+/// indicator pane. [config] is the pane's indicator config and [bottomIndex]
+/// is its position among the bottom (sub-chart) configs. Returning `null` is
+/// not allowed — return `SizedBox.shrink()` to render nothing.
+typedef BottomChartLegendBuilder = Widget Function(
+  BuildContext context,
+  IndicatorConfig config,
+  int bottomIndex,
+);
+
 /// Interactive chart widget.
 class Chart extends StatefulWidget {
   /// Creates chart that expands to available space.
@@ -90,6 +100,7 @@ class Chart extends StatefulWidget {
     this.crosshairBuilder,
     this.quoteLabelFormatter,
     this.showIndicatorLabels = true,
+    this.bottomChartLegendBuilder,
     Key? key,
   }) : super(key: key);
 
@@ -257,6 +268,12 @@ class Chart extends StatefulWidget {
   /// to keep the chart clean when indicator management lives outside the chart
   /// (e.g. Polymarket manages indicators via its own sheets).
   final bool showIndicatorLabels;
+
+  /// Optional builder for a custom legend at the top-left of each bottom
+  /// indicator pane. When `null` (default) the built-in title chip is used,
+  /// so existing callers are unaffected (zero regression). Independent of
+  /// [showIndicatorLabels].
+  final BottomChartLegendBuilder? bottomChartLegendBuilder;
 
   @override
   State<StatefulWidget> createState() =>

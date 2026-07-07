@@ -53,8 +53,13 @@ class _ChartStateMobile extends _ChartState {
           final int indexInBottomConfigs =
               referenceIndexOf(widget.bottomConfigs, config);
 
+          // Optional custom legend for this pane (null = built-in title chip).
+          final Widget? paneLegend = widget.bottomChartLegendBuilder
+              ?.call(context, config, indexInBottomConfigs);
+
           final Widget bottomChart = BottomChartMobile(
             series: series,
+            bottomChartLegend: paneLegend,
             isHidden: repository?.getHiddenStatus(index) ?? false,
             granularity: widget.granularity,
             pipSize: config.pipSize,

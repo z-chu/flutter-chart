@@ -32,6 +32,7 @@ class BottomChartMobile extends BasicChart {
     this.showMoveDownIcon = false,
     this.bottomChartTitleMargin,
     this.showIndicatorLabels = true,
+    this.bottomChartLegend,
     super.currentTickAnimationDuration,
     super.quoteBoundsAnimationDuration,
   }) : super(key: key, mainSeries: series, pipSize: pipSize);
@@ -67,6 +68,11 @@ class BottomChartMobile extends BasicChart {
   /// Whether to render the built-in indicator label chip (title + eye/move
   /// icons). Defaults to `true`; set `false` to keep the pane clean.
   final bool showIndicatorLabels;
+
+  /// Optional custom legend rendered at the pane's top-left (in place of the
+  /// built-in title chip). `null` (default) keeps the built-in chip, so
+  /// existing callers are unaffected (zero regression).
+  final Widget? bottomChartLegend;
 
   @override
   _BottomChartMobileState createState() => _BottomChartMobileState();
@@ -112,7 +118,10 @@ class _BottomChartMobileState extends BasicChartState<BottomChartMobile> {
                   Positioned(
                     top: 4,
                     left: widget.bottomChartTitleMargin?.left ?? 10,
-                    child: _buildIndicatorLabelMobile(),
+                    // Custom legend (PM) replaces the built-in title chip;
+                    // null falls back to it (highlow / library callers).
+                    child: widget.bottomChartLegend ??
+                        _buildIndicatorLabelMobile(),
                   ),
                   // Y-axis scale gesture layer - must be on top to intercept gestures
                   // from parent scrollable widgets like CustomScrollView
