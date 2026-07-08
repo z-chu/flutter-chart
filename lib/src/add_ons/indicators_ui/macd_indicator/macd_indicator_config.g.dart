@@ -20,6 +20,7 @@ MACDIndicatorConfig _$MACDIndicatorConfigFromJson(Map<String, dynamic> json) =>
       signalLineStyle: json['signalLineStyle'] == null
           ? const LineStyle(color: Colors.redAccent)
           : LineStyle.fromJson(json['signalLineStyle'] as Map<String, dynamic>),
+      centerZero: json['centerZero'] as bool? ?? false,
       pipSize: json['pipSize'] as int? ?? 4,
       showLastIndicator: json['showLastIndicator'] as bool? ?? false,
       title: json['title'] as String?,
@@ -39,4 +40,5 @@ Map<String, dynamic> _$MACDIndicatorConfigToJson(
       'barStyle': instance.barStyle,
       'lineStyle': instance.lineStyle,
       'signalLineStyle': instance.signalLineStyle,
+      'centerZero': instance.centerZero,
     };

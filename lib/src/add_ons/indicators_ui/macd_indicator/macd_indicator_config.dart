@@ -25,6 +25,7 @@ class MACDIndicatorConfig extends IndicatorConfig {
     this.barStyle = const BarStyle(),
     this.lineStyle = const LineStyle(color: Colors.white),
     this.signalLineStyle = const LineStyle(color: Colors.redAccent),
+    this.centerZero = false,
     int pipSize = 4,
     bool showLastIndicator = false,
     String? title,
@@ -81,6 +82,13 @@ class MACDIndicatorConfig extends IndicatorConfig {
   /// Signal line style.
   final LineStyle signalLineStyle;
 
+  /// Whether the sub-chart y-range is forced symmetric around zero, so the
+  /// histogram baseline (0) always sits at the vertical center of the pane.
+  ///
+  /// Defaults to `false` (data-driven min/max, original behaviour). When `true`,
+  /// [MACDSeries.recalculateMinMax] returns `[-M, M]` with `M = max(|min|,|max|)`.
+  final bool centerZero;
+
   @override
   String get configSummary => '$fastMAPeriod, $slowMAPeriod, $signalPeriod';
 
@@ -109,6 +117,7 @@ class MACDIndicatorConfig extends IndicatorConfig {
     BarStyle? barStyle,
     LineStyle? lineStyle,
     LineStyle? signalLineStyle,
+    bool? centerZero,
     int? pipSize,
     bool? showLastIndicator,
     String? title,
@@ -121,6 +130,7 @@ class MACDIndicatorConfig extends IndicatorConfig {
         barStyle: barStyle ?? this.barStyle,
         lineStyle: lineStyle ?? this.lineStyle,
         signalLineStyle: signalLineStyle ?? this.signalLineStyle,
+        centerZero: centerZero ?? this.centerZero,
         pipSize: pipSize ?? this.pipSize,
         showLastIndicator: showLastIndicator ?? this.showLastIndicator,
         title: title ?? this.title,

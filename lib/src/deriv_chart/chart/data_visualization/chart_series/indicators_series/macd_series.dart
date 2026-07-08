@@ -11,6 +11,8 @@ import 'package:deriv_chart/src/models/chart_config.dart';
 import 'package:deriv_chart/src/models/indicator_input.dart';
 import 'package:deriv_chart/src/models/tick.dart';
 import 'package:deriv_chart/src/theme/chart_theme.dart';
+import 'dart:math' as math;
+
 import 'package:deriv_technical_analysis/deriv_technical_analysis.dart';
 import 'package:flutter/material.dart';
 
@@ -132,12 +134,29 @@ class MACDSeries extends Series {
   }
 
   @override
-  List<double> recalculateMinMax() => <double>[
-        <ChartData>[macdSeries, signalMACDSeries, macdHistogramSeries]
-            .getMinValue(),
-        <ChartData>[macdSeries, signalMACDSeries, macdHistogramSeries]
-            .getMaxValue()
-      ];
+  List<double> recalculateMinMax() {
+    final double min = <ChartData>[
+      macdSeries,
+      signalMACDSeries,
+      macdHistogramSeries
+    ].getMinValue();
+    final double max = <ChartData>[
+      macdSeries,
+      signalMACDSeries,
+      macdHistogramSeries
+    ].getMaxValue();
+    if (config.centerZero) {
+      // Symmetric range so the histogram baseline (0) stays at the vertical
+      // center of the pane. Half-height = the larger absolute bound.
+      final double m = math.max(min.abs(), max.abs());
+      // Fall back to the raw bounds when there is no visible data (min/max are
+      // NaN) or the half-height collapses to 0, avoiding a degenerate [0, 0].
+      if (m.isFinite && m > 0) {
+        return <double>[-m, m];
+      }
+    }
+    return <double>[min, max];
+  }
 
   @override
   void paint(
