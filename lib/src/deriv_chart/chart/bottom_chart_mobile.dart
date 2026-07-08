@@ -14,6 +14,7 @@ import 'basic_chart.dart';
 import 'bottom_chart.dart';
 import 'data_visualization/chart_series/series.dart';
 import 'x_axis/x_axis_model.dart';
+import 'y_axis/quote_grid.dart';
 
 /// Mobile version of the chart to add the bottom indicators too.
 class BottomChartMobile extends BasicChart {
@@ -33,6 +34,7 @@ class BottomChartMobile extends BasicChart {
     this.bottomChartTitleMargin,
     this.showIndicatorLabels = true,
     this.bottomChartLegend,
+    this.edgeYLabels = false,
     super.enableYAxisScaling,
     super.currentTickAnimationDuration,
     super.quoteBoundsAnimationDuration,
@@ -75,6 +77,11 @@ class BottomChartMobile extends BasicChart {
   /// existing callers are unaffected (zero regression).
   final Widget? bottomChartLegend;
 
+  /// Whether to pin exactly two y-axis grid labels at the visible min/max
+  /// bounds instead of the default interval-based labels (which on a short pane
+  /// often collapse to a single mid label). Defaults to `false` (unchanged).
+  final bool edgeYLabels;
+
   @override
   _BottomChartMobileState createState() => _BottomChartMobileState();
 }
@@ -85,6 +92,31 @@ class _BottomChartMobileState extends BasicChartState<BottomChartMobile> {
   /// Builds a button to reset the Y-axis scaling to auto-fit mode.
   Widget _buildResetYAxisButton() =>
       ResetYAxisButton(onPressed: resetYAxisScale);
+
+  @override
+  List<double> calculateGridLineQuotes(YAxisModel yAxisModel) {
+    if (!widget.edgeYLabels) {
+      return super.calculateGridLineQuotes(yAxisModel);
+    }
+    // Pin two labels at the visible max/min bounds (top-high, bottom-low),
+    // matching gridQuotes() ordering (first = highest, last = lowest).
+    final List<double> newGridLineQuotes = <double>[
+      yAxisModel.topBoundQuote,
+      yAxisModel.bottomBoundQuote,
+    ];
+    // Preserve the parent's onQuoteAreaChanged diff logic (external callers
+    // depend on it; dropping it would silently break them).
+    if (newGridLineQuotes.isNotEmpty &&
+        (gridLineQuotes == null ||
+            gridLineQuotes!.isEmpty ||
+            newGridLineQuotes.first != gridLineQuotes!.first ||
+            newGridLineQuotes.last != gridLineQuotes!.last)) {
+      widget.onQuoteAreaChanged
+          ?.call(newGridLineQuotes.first, newGridLineQuotes.last);
+    }
+    gridLineQuotes = newGridLineQuotes;
+    return gridLineQuotes!;
+  }
 
   @override
   Widget build(BuildContext context) {

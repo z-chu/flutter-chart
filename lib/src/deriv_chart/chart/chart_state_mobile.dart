@@ -82,6 +82,7 @@ class _ChartStateMobile extends _ChartState {
                 indexInBottomConfigs != bottomSeries.length - 1,
             showFrame: context.read<ChartConfig>().chartAxisConfig.showFrame,
             showIndicatorLabels: widget.showIndicatorLabels,
+            edgeYLabels: widget.bottomChartEdgeYLabels,
           );
 
           return (repository?.getHiddenStatus(index) ?? false)

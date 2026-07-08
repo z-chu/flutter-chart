@@ -101,6 +101,7 @@ class Chart extends StatefulWidget {
     this.quoteLabelFormatter,
     this.showIndicatorLabels = true,
     this.bottomChartLegendBuilder,
+    this.bottomChartEdgeYLabels = false,
     Key? key,
   }) : super(key: key);
 
@@ -274,6 +275,13 @@ class Chart extends StatefulWidget {
   /// so existing callers are unaffected (zero regression). Independent of
   /// [showIndicatorLabels].
   final BottomChartLegendBuilder? bottomChartLegendBuilder;
+
+  /// Whether each bottom (sub) indicator pane pins exactly two y-axis grid
+  /// labels at its visible min/max bounds, instead of the default interval-based
+  /// labels (which on a short pane often collapse to a single mid label).
+  /// Defaults to `false` (unchanged library behaviour). Only affects mobile
+  /// bottom charts.
+  final bool bottomChartEdgeYLabels;
 
   @override
   State<StatefulWidget> createState() =>
