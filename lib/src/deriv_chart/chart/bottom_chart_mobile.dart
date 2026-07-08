@@ -33,6 +33,7 @@ class BottomChartMobile extends BasicChart {
     this.bottomChartTitleMargin,
     this.showIndicatorLabels = true,
     this.bottomChartLegend,
+    super.enableYAxisScaling,
     super.currentTickAnimationDuration,
     super.quoteBoundsAnimationDuration,
   }) : super(key: key, mainSeries: series, pipSize: pipSize);

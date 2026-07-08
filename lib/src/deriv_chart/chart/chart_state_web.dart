@@ -70,6 +70,8 @@ class _ChartStateWeb extends _ChartState {
               flex: isExpanded ? bottomSeries.length : 1,
               child: BottomChart(
                 series: series,
+                // 副图恒关 Y 轴缩放：初始自适应区间已够用，禁掉手势层 + 复位「A」按钮。
+                enableYAxisScaling: false,
                 granularity: widget.granularity,
                 pipSize: widget.bottomConfigs[index].pipSize,
                 title: widget.bottomConfigs[index].title,

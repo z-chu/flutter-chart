@@ -59,6 +59,8 @@ class _ChartStateMobile extends _ChartState {
 
           final Widget bottomChart = BottomChartMobile(
             series: series,
+            // 副图恒关 Y 轴缩放：初始自适应区间已够用，禁掉手势层 + 复位「A」按钮。
+            enableYAxisScaling: false,
             bottomChartLegend: paneLegend,
             isHidden: repository?.getHiddenStatus(index) ?? false,
             granularity: widget.granularity,

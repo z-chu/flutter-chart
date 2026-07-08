@@ -32,6 +32,7 @@ class BottomChart extends BasicChart {
     this.showMoveUpIcon = false,
     this.showMoveDownIcon = false,
     this.bottomChartTitleMargin,
+    super.enableYAxisScaling,
     super.currentTickAnimationDuration,
     super.quoteBoundsAnimationDuration,
   }) : super(key: key, mainSeries: series, pipSize: pipSize);
