@@ -43,9 +43,12 @@ const Duration _defaultDuration = Duration(milliseconds: 300);
 
 /// Builds a custom legend widget rendered at the top-left of a bottom
 /// indicator pane. [config] is the pane's indicator config and [bottomIndex]
-/// is its position among the bottom (sub-chart) configs. Returning `null` is
-/// not allowed — return `SizedBox.shrink()` to render nothing.
-typedef BottomChartLegendBuilder = Widget Function(
+/// is its position among the bottom (sub-chart) configs. Return `null` when the
+/// pane has no legend at all — the pane then skips the top padding it would
+/// otherwise reserve to keep the legend from occluding the series. Return
+/// `SizedBox.shrink()` (non-null) to keep that padding while momentarily
+/// rendering nothing (e.g. a value not yet available).
+typedef BottomChartLegendBuilder = Widget? Function(
   BuildContext context,
   IndicatorConfig config,
   int bottomIndex,

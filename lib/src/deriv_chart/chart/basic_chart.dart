@@ -153,7 +153,12 @@ class BasicChartState<T extends BasicChart> extends State<T>
     }
   }
 
-  double get _topPadding => verticalPadding;
+  /// Extra top padding (px) reserved above the plotted series, added on top of
+  /// [verticalPadding]. Subclasses override this to keep an overlaid top-left
+  /// legend from occluding the series. Defaults to 0 (main chart / web).
+  double get extraTopPadding => 0;
+
+  double get _topPadding => verticalPadding + extraTopPadding;
 
   double get _bottomPadding => verticalPadding;
 

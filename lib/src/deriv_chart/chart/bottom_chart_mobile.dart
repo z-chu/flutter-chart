@@ -89,6 +89,17 @@ class BottomChartMobile extends BasicChart {
 class _BottomChartMobileState extends BasicChartState<BottomChartMobile> {
   ChartTheme get theme => context.read<ChartTheme>();
 
+  /// 该 pane 是否真的挂了 legend：外部自定义 legend 非空，或库自带 title chip 开着。
+  /// 二者皆无（如 PM 关掉了该副图的 legend）时无遮挡之虞，不必预留顶部内边距。
+  bool get _hasLegend =>
+      widget.bottomChartLegend != null || widget.showIndicatorLabels;
+
+  /// 副图左上角常驻 legend（PM 自定义或库自带 title chip，见 build 中 Positioned
+  /// top:4）会盖住绘制区顶部的指标线。挂了 legend 时额外预留一段顶部内边距把 series
+  /// 下压给它让位（约 top 偏移(4) + 单行读数(~13) + 间隙）；没挂则不占，让指标铺满。
+  @override
+  double get extraTopPadding => _hasLegend ? 14 : 0;
+
   /// Builds a button to reset the Y-axis scaling to auto-fit mode.
   Widget _buildResetYAxisButton() =>
       ResetYAxisButton(onPressed: resetYAxisScale);
