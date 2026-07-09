@@ -225,7 +225,7 @@ class _ChartStateMobile extends _ChartState {
   }
 
   double _getBottomIndicatorsSectionHeightFraction(int bottomIndicatorsCount) =>
-      1 - (0.65 - 0.125 * (bottomIndicatorsCount - 1));
+      1 - (0.75 - 0.125 * (bottomIndicatorsCount - 1));
 
   bool get _isAllBottomIndicatorsHidden {
     bool isAllHidden = true;
